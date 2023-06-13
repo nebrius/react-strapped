@@ -2,7 +2,7 @@
   "name": "recoil-bootstrap",
   "version": "1.0.0",
   "description": "A set of helpers for initializing recoil at runtime with bootstrap data",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
