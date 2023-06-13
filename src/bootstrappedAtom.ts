@@ -1,5 +1,3 @@
-'use client';
-
 import type { AtomOptions, RecoilValue } from 'recoil';
 import { atom, selector } from 'recoil';
 
@@ -20,7 +18,7 @@ export function bootstrappedAtom<AtomValue, InitialState>(
 ) {
   if ('default' in options) {
     throw new Error(
-      'The "default" prop is not allowed in bootstrapped atoms. Use initialValue instead',
+      'The "default" prop is not allowed in bootstrapped atoms. Use "initialValue" instead',
     );
   }
   return atom({

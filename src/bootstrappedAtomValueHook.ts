@@ -1,5 +1,3 @@
-'use client';
-
 import type { RecoilValue } from 'recoil';
 import { useRecoilValueLoadable } from 'recoil';
 
@@ -12,7 +10,7 @@ export function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>) {
       }
       case 'loading': {
         throw new Error(
-          'Bootstrap root atom not loaded. Did you call this hook outside of its bootstrap root?',
+          'Bootstrap root atom not loaded. Did you call this hook outside of its bootstrap root component tree?',
         );
       }
       case 'hasError': {
