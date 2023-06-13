@@ -3,7 +3,7 @@
 'use client';
 
 import type { PropsWithChildren } from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import type { RecoilState } from 'recoil';
 import { useRecoilStateLoadable } from 'recoil';
 
