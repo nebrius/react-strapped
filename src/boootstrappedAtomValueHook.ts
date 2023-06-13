@@ -14,7 +14,7 @@ export function bootstrappedAtomValueHook<T>(
       }
       case 'loading': {
         throw new Error(
-          'Initial state atom not loaded. Did you call this hook outside of its layout root?',
+          'Bootstrap root atom not loaded. Did you call this hook outside of its bootstrap root?',
         );
       }
       case 'hasError': {

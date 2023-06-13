@@ -25,6 +25,11 @@ export function bootstrappedAtom<AtomValue, InitialState>(
     ...options
   }: BootstrappedAtomOptions<AtomValue, InitialState>,
 ) {
+  if ('default' in options) {
+    throw new Error(
+      'The "default" prop is not allowed in bootstrapped atoms. Use initialValue instead',
+    );
+  }
   return atom({
     ...options,
     key,
