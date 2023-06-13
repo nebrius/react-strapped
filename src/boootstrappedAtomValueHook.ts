@@ -3,11 +3,9 @@
 import type { RecoilValue } from 'recoil';
 import { useRecoilValueLoadable } from 'recoil';
 
-export function bootstrappedAtomValueHook<T>(
-  initalStateValueAtom: RecoilValue<T>,
-) {
+export function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>) {
   return () => {
-    const valueLoadable = useRecoilValueLoadable(initalStateValueAtom);
+    const valueLoadable = useRecoilValueLoadable(bootstrappedAtom);
     switch (valueLoadable.state) {
       case 'hasValue': {
         return valueLoadable.contents;

@@ -1,24 +1,17 @@
 'use client';
 
-import type { AtomOptions, Loadable, RecoilValue, WrappedValue } from 'recoil';
+import type { AtomOptions, RecoilValue } from 'recoil';
 import { atom, selector } from 'recoil';
 
-type BootstrappedAtomOptions<AtomValue, InitialState> = Omit<
+type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
   AtomOptions<AtomValue>,
   'default'
 > & {
-  initialValue: (
-    initialState: InitialState,
-  ) =>
-    | RecoilValue<AtomValue>
-    | Promise<AtomValue>
-    | Loadable<AtomValue>
-    | WrappedValue<AtomValue>
-    | AtomValue;
+  initialValue: (bootstrapData: BootstrapData) => AtomValue;
 };
 
 export function bootstrappedAtom<AtomValue, InitialState>(
-  initialStateAtom: RecoilValue<InitialState>,
+  bootstrapRootAtom: RecoilValue<InitialState>,
   {
     initialValue,
     key,
@@ -33,11 +26,11 @@ export function bootstrappedAtom<AtomValue, InitialState>(
   return atom({
     ...options,
     key,
-    // We set the default to a selector so that we can grab the initial value
-    // from the initial value atom, which is set in a LayoutStateRoot component
+    // We set the default to a selector so that we can grab the bootstrap data
+    // from the bootstrapRootAtom, which is set in a BootstrapRoot component
     default: selector({
       key: `${key}:atomInitializer`,
-      get: ({ get }) => initialValue(get(initialStateAtom)),
+      get: ({ get }) => initialValue(get(bootstrapRootAtom)),
     }),
   });
 }
