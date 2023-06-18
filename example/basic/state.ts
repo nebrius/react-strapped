@@ -1,17 +1,17 @@
 import {
   bootstrapRootAtom,
   bootstrappedAtom,
-  bootstrappedAtomValueHook
+  bootstrappedAtomValueHook,
 } from '../..';
 
-interface MyState {
+export interface MyBootstrapData {
   currentUser: {
     name: string;
     age: number;
-  }
+  };
 }
 
-export const myBootstrapRootAtom = bootstrapRootAtom<MyState>(
+export const myBootstrapRootAtom = bootstrapRootAtom<MyBootstrapData>(
   'myBootstrapRootAtom',
 );
 
@@ -19,6 +19,5 @@ const currentUserAtom = bootstrappedAtom(myBootstrapRootAtom, {
   key: 'currentUserAtom',
   initialValue: ({ currentUser }) => currentUser,
 });
-
 
 export const useCurrentUser = bootstrappedAtomValueHook(currentUserAtom);

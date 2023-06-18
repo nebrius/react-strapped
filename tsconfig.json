@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "incremental": true, /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
     "jsx": "react", /* Specify what JSX code is generated. */
     "sourceMap": true, /* Create source map files for emitted JavaScript files. */
@@ -9,6 +13,7 @@
     "declaration": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./example/**/*"
   ]
 }

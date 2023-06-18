@@ -1,25 +1,27 @@
+'use client';
+
 import React from 'react';
-import {BootstrapRoot} from '../..';
-import { myBootstrapRootAtom, useCurrentUser } from './state';
 import { RecoilRoot } from 'recoil';
 
+import type { MyBootstrapData } from './state';
+import { myBootstrapRootAtom, useCurrentUser } from './state';
+import { BootstrapRoot } from '../..';
+
 function MyComponent() {
-  const currentUser = useCurrentUser()
+  const currentUser = useCurrentUser();
   return (
     // Prints "Hello Philip J Fry"
     <div>Hello {currentUser.name}</div>
-  )
+  );
 }
 
-export function MyApp() {
+export function MyApp({ bootstrapData }: { bootstrapData: MyBootstrapData }) {
   return (
     <RecoilRoot>
-      <BootstrapRoot bootstrapData={{
-        currentUser: {
-          name: 'Philip J Fry',
-          age: 1_026
-        }
-      }} bootstrapRootAtom={myBootstrapRootAtom}>
+      <BootstrapRoot
+        bootstrapData={bootstrapData}
+        bootstrapRootAtom={myBootstrapRootAtom}
+      >
         <MyComponent />
       </BootstrapRoot>
     </RecoilRoot>
