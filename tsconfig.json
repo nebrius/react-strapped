@@ -13,7 +13,6 @@
     "declaration": true
   },
   "include": [
-    "./src/**/*",
-    "./example/**/*"
+    "./src/**/*"
   ]
 }
