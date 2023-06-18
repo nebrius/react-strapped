@@ -66,7 +66,6 @@ Now let's create some UI in a Next.js page component:
 ```tsx
 import { RecoilRoot } from 'recoil';
 import { BootstrapRoot } from 'recoil-bootstrap';
-import type { MyBootstrapData } from './state';
 import { myBootstrapRootAtom, useCurrentUser } from './state';
 
 function MyComponent() {
@@ -83,14 +82,15 @@ function MyComponent() {
 // responsible for fetching bootstrap data. The value of the `props` property is
 // passed as props to the default export in this file.
 export function getServerSideProps() {
-  const bootstrapData: MyBootstrapData = {
-    currentUser: {
-      name: 'Philip J Fry',
-      age: 1_026
-    }
-  };
   return {
-    props: { bootstrapData }
+    props: {
+      bootstrapData: {
+        currentUser: {
+          name: 'Philip J Fry',
+          age: 1_026
+        }
+      }
+    }
   };
 }
 
@@ -112,6 +112,52 @@ export default function MyApp({ bootstrapData }) {
   );
 }
 ```
+## Multipage Apps
+
+You can have as many bootstrap roots as you want with any amount of nesting.
+Recoil Bootstrap is designed specifically for multi-page applications. In these
+applications, we often have a set of bootstrap data that is common to all pages,
+as well as bootstrap data that is specific to a page.
+
+With Recoil Bootstrap, you can create one bootstrap root for the common
+bootstrap data that exists on all pages, and then per-page bootstrap roots that
+contain that pages data. If bootstrap data exists across a few pages, you can
+create a third bootstrap root for them.
+
+This would look like:
+
+```tsx
+function AppWrapper({ commonBootstrapData, children }) {
+  return (
+    <RecoilRoot>
+      <BootstrapRoot
+        bootstrapData={commonBootstrapData}
+        bootstrapRootAtom={commonBootstrapRootAtom}
+      >
+      </BootstrapRoot>
+    </RecoilRoot>
+  );
+}
+
+export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
+  return (
+    <AppWrapper>
+      <BootstrapRoot
+        bootstrapData={myPageBootstrapData}
+        bootstrapRootAtom={myPageBootstrapRootAtom}
+      >
+      </BootstrapRoot>
+    </AppWrapper>
+  )
+}
+```
+
+When using multiple roots, hooks for accessing data provide guardrails against
+accessing data from the wrong place. If you try and call a bootstrapped hook
+based on `myPageBootstrapRootAtom` on a different page, then you'll get a human
+readable error saying you're trying to access it from the wrong place, like so:
+
+![Image showing a hook access error](img/access-error.png)
 
 ## License
 
