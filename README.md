@@ -2,8 +2,10 @@
 
 [Recoil](https://recoiljs.org/) is a popular new state management framework for
 React with a powerful yet simple API. However, initializing Recoil with runtime
-bootstrap data can be tricky, especially when used with multi-page app
-frameworks such as [Next.js](https://nextjs.org/).
+bootstrap data [is tricky and
+non-obvious](https://github.com/facebookexperimental/Recoil/issues/750),
+especially when used with multi-page app frameworks such as
+[Next.js](https://nextjs.org/).
 
 Recoil bootstrap provides some helpers that make working with bootstrap data in
 Recoil more straightfoward.
@@ -33,7 +35,7 @@ import {
   bootstrappedAtomValueHook
 } from 'recoil-bootstrap';
 
-interface MyState {
+interface MyBootstrapData {
   currentUser: {
     name: string;
     age: number;
@@ -43,7 +45,7 @@ interface MyState {
 // Note how this root atom only takes in a key, and is otherwise unconfigurable.
 // By specifying the shape of state here, we get full typing throughout the rest
 // of our atoms/hooks/components/etc.
-export const myBootstrapRootAtom = bootstrapRootAtom<MyState>(
+export const myBootstrapRootAtom = bootstrapRootAtom<MyBootstrapData>(
   'myBootstrapRootAtom',
 );
 
@@ -59,12 +61,12 @@ const currentUserAtom = bootstrappedAtom(myBootstrapRootAtom, {
 export const useCurrentUser = bootstrappedAtomValueHook(currentUserAtom);
 ```
 
-Now let's create some UI:
+Now let's create some UI in a Next.js page component:
 
 ```tsx
-import React from 'react';
 import { RecoilRoot } from 'recoil';
 import { BootstrapRoot } from 'recoil-bootstrap';
+import type { MyBootstrapData } from './state';
 import { myBootstrapRootAtom, useCurrentUser } from './state';
 
 function MyComponent() {
@@ -77,19 +79,31 @@ function MyComponent() {
   );
 }
 
-export function MyApp() {
+// If you're not familiar with Next.js, this function runs on a server and is
+// responsible for fetching bootstrap data. The value of the `props` property is
+// passed as props to the default export in this file.
+export function getServerSideProps() {
+  const bootstrapData: MyBootstrapData = {
+    currentUser: {
+      name: 'Philip J Fry',
+      age: 1_026
+    }
+  };
+  return {
+    props: { bootstrapData }
+  };
+}
+
+// This default export is the root component in a Next.js page. The props
+// passed to this component come from the server
+export default function MyApp({ bootstrapData }) {
   return (
     // We create our recoil root as normal, and then create our bootstrap root
     // with our bootstrap data and bootstrap atom. The BootstrapRoot component
     // does the work of correlating our bootstrapped atoms with bootstrap data.
     <RecoilRoot>
       <BootstrapRoot
-        bootstrapData={{
-          currentUser: {
-            name: 'Philip J Fry',
-            age: 1_026
-          }
-        }}
+        bootstrapData={bootstrapData}
         bootstrapRootAtom={myBootstrapRootAtom}
       >
         <MyComponent />
