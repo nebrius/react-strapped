@@ -112,6 +112,7 @@ export default function MyApp({ bootstrapData }) {
   );
 }
 ```
+
 ## Multipage Apps
 
 You can have as many bootstrap roots as you want with any amount of nesting.
@@ -158,6 +159,49 @@ based on `myPageBootstrapRootAtom` on a different page, then you'll get a human
 readable error saying you're trying to access it from the wrong place, like so:
 
 ![Image showing a hook access error](img/access-error.png)
+
+## API
+
+### bootstrapRootAtom
+
+```ts
+function bootstrapRootAtom<T>(key: string): RecoilState<T>
+```
+
+### bootstrappedAtom
+
+```ts
+type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
+  AtomOptions<AtomValue>,
+  'default'
+> & {
+  initialValue: (bootstrapData: BootstrapData) => AtomValue;
+};
+
+function bootstrappedAtom<AtomValue, BootstrapData>(
+  bootstrapRootAtom: RecoilValue<BootstrapData>,
+  options: BootstrappedAtomOptions<AtomValue, BootstrapData>
+): RecoilState<AtomValue>
+```
+
+### bootstrappedAtomValueHook
+
+```ts
+function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>): () => T
+```
+
+### BootstrapRoot
+
+```ts
+interface LocalizedStateProps<BootstrapData> {
+  bootstrapData: BootstrapData;
+  bootstrapRootAtom: RecoilState<BootstrapData>;
+}
+
+function BootstrapRoot<BootstrapData>(
+  props: PropsWithChildren<LocalizedStateProps<BootstrapData>>
+): JSX.Element | null
+```
 
 ## License
 

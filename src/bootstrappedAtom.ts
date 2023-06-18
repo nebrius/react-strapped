@@ -8,13 +8,13 @@ type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
   initialValue: (bootstrapData: BootstrapData) => AtomValue;
 };
 
-export function bootstrappedAtom<AtomValue, InitialState>(
-  bootstrapRootAtom: RecoilValue<InitialState>,
+export function bootstrappedAtom<AtomValue, BootstrapData>(
+  bootstrapRootAtom: RecoilValue<BootstrapData>,
   {
     initialValue,
     key,
     ...options
-  }: BootstrappedAtomOptions<AtomValue, InitialState>,
+  }: BootstrappedAtomOptions<AtomValue, BootstrapData>,
 ) {
   if ('default' in options) {
     throw new Error(
