@@ -158,7 +158,10 @@ accessing data from the wrong place. If you try and call a bootstrapped hook
 based on `myPageBootstrapRootAtom` on a different page, then you'll get a human
 readable error saying you're trying to access it from the wrong place, like so:
 
-![Image showing a hook access error](img/access-error.png)
+<br />
+<p align="center">
+  <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
+</p>
 
 ## API
 
