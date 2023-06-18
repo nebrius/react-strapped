@@ -163,6 +163,10 @@ readable error saying you're trying to access it from the wrong place, like so:
   <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
 </p>
 
+For an in-depth example of a multi-page Next.js app using Recoil Bootstrap and
+React Server Components, see my
+[recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
+
 ## API
 
 ### bootstrapRootAtom
