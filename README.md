@@ -3,12 +3,12 @@
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Multipage Apps](#multipage-apps)
+- [Multi-page Apps](#multi-page-apps)
 - [API Specification](#api-specification)
   - [`bootstrapRootAtom`](#bootstraprootatom)
   - [`bootstrappedAtom`](#bootstrappedatom)
-  - [bootstrappedAtomValueHook](#bootstrappedatomvaluehook)
-  - [BootstrapRoot](#bootstraproot)
+  - [`bootstrappedAtomValueHook`](#bootstrappedatomvaluehook)
+  - [`BootstrapRoot`](#bootstraproot)
 - [License](#license)
 
 ## Motivation
@@ -136,7 +136,7 @@ export default function MyApp({ bootstrapData }) {
 }
 ```
 
-## Multipage Apps
+## Multi-page Apps
 
 You can have as many bootstrap roots as you want with any amount of nesting.
 Recoil Bootstrap is designed specifically for multi-page applications. In these
@@ -250,7 +250,7 @@ _**Throws:**_
 
 This function will throw an exception if a `default` value is included in `options`.
 
-### bootstrappedAtomValueHook
+### `bootstrappedAtomValueHook`
 
 Creates a hook for accessing a bootstrapped atom's value safely.
 
@@ -272,7 +272,7 @@ _**Throws:**_
 
 Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a function that does not have the corresponding `BootstrapRoot` further up the component tree.
 
-### BootstrapRoot
+### `BootstrapRoot`
 
 This component takes bootstrap data and initializes all root atoms and associated bootstrapped atoms.
 
