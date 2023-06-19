@@ -4,7 +4,7 @@
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Multipage Apps](#multipage-apps)
-- [API](#api)
+- [API Specification](#api-specification)
 - [License](#license)
 
 ## Motivation
@@ -186,13 +186,25 @@ For an in-depth example of a multi-page Next.js app using Recoil Bootstrap and
 React Server Components, see my
 [recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
 
-## API
+## API Specification
 
-### bootstrapRootAtom
+### `bootstrapRootAtom`
+
+Creates a bootstrap root atom.
 
 ```ts
 function bootstrapRootAtom<T>(key: string): RecoilState<T>
 ```
+
+_**Props:**_
+
+`key`: `string`
+
+The key to assign to the root atom.
+
+_**Returns:**_
+
+The bootstrapped root atom to be passed to a corresponding [BoostrapRoot](#BootstrapRoot) component.
 
 ### bootstrappedAtom
 
