@@ -5,6 +5,10 @@
 - [Getting Started](#getting-started)
 - [Multipage Apps](#multipage-apps)
 - [API Specification](#api-specification)
+  - [`bootstrapRootAtom`](#bootstraprootatom)
+  - [`bootstrappedAtom`](#bootstrappedatom)
+  - [bootstrappedAtomValueHook](#bootstrappedatomvaluehook)
+  - [BootstrapRoot](#bootstraproot)
 - [License](#license)
 
 ## Motivation
@@ -206,7 +210,9 @@ _**Returns:**_
 
 The bootstrapped root atom to be passed to a corresponding [BoostrapRoot](#BootstrapRoot) component.
 
-### bootstrappedAtom
+### `bootstrappedAtom`
+
+Creates a bootstrapped atom for accessing bootstrap data.
 
 ```ts
 type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
@@ -222,13 +228,53 @@ function bootstrappedAtom<AtomValue, BootstrapData>(
 ): RecoilState<AtomValue>
 ```
 
+_**Props:**_
+
+`bootstrapRootAtom`: `RecoilValue`
+
+The root atom containing the bootstrap data to initialize this atom with.
+
+`options`: `BootstrappedAtomOptions`
+
+Options here are the mostly the same as the options passed to the built-in `atom()` function in Recoil. The difference is that the `default` property is _not_ allowed, and there is a new `initialValue` function to replace `default`.
+
+`options.initialValue`: `(bootstrapData: BootstrapData) => AtomValue`
+
+A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BoostrapRoot](#BootstrapRoot)
+
+_**Returns:**_
+
+The bootstrapped that can then be passed to [bootstrappedAtomValueHook](#bootstrappedAtomValueHook) to create a hook for safely accessing this data.
+
+_**Throws:**_
+
+This function will throw an exception if a `default` value is included in `options`.
+
 ### bootstrappedAtomValueHook
+
+Creates a hook for accessing a bootstrapped atom's value safely.
 
 ```ts
 function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>): () => T
 ```
 
+_**Props:**_
+
+`bootstrappedAtom`: `RecoilValue`
+
+The bootstrapped atom to create the accessor hook for
+
+_**Returns:**_
+
+The hook that accesses the value.
+
+_**Throws:**_
+
+Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a function that does not have the corresponding `BootstrapRoot` further up the component tree.
+
 ### BootstrapRoot
+
+This component takes bootstrap data and initializes all root atoms and associated bootstrapped atoms.
 
 ```ts
 interface LocalizedStateProps<BootstrapData> {
@@ -240,6 +286,15 @@ function BootstrapRoot<BootstrapData>(
   props: PropsWithChildren<LocalizedStateProps<BootstrapData>>
 ): JSX.Element | null
 ```
+_**Props:**_
+
+`bootstrapData`: `BootstrapData`
+
+The bootstrap data to initialize atoms with.
+
+`bootstrapRootAtom`: `RecoilState`
+
+The root atom to store the data, which in turn initializes all bootstrapped atoms.
 
 ## License
 
