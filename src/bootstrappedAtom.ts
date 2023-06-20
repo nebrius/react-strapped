@@ -9,7 +9,7 @@ type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
 };
 
 export function bootstrappedAtom<AtomValue, BootstrapData>(
-  bootstrapRootAtom: RecoilValue<BootstrapData>,
+  rootAtom: RecoilValue<BootstrapData>,
   {
     initialValue,
     key,
@@ -25,10 +25,10 @@ export function bootstrappedAtom<AtomValue, BootstrapData>(
     ...options,
     key,
     // We set the default to a selector so that we can grab the bootstrap data
-    // from the bootstrapRootAtom, which is set in a BootstrapRoot component
+    // from the rootAtom, which is set in a BootstrapRoot component
     default: selector({
       key: `${key}:atomInitializer`,
-      get: ({ get }) => initialValue(get(bootstrapRootAtom)),
+      get: ({ get }) => initialValue(get(rootAtom)),
     }),
   });
 }

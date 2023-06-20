@@ -7,7 +7,7 @@ Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data i
 - [Getting Started](#getting-started)
 - [Multi-page Apps](#multi-page-apps)
 - [API Specification](#api-specification)
-  - [`bootstrapRootAtom`](#bootstraprootatom)
+  - [`rootAtom`](#rootatom)
   - [`bootstrappedAtom`](#bootstrappedatom)
   - [`bootstrappedAtomValueHook`](#bootstrappedatomvaluehook)
   - [`BootstrapRoot`](#bootstraproot)
@@ -42,11 +42,13 @@ npm install recoil-bootstrap
 
 ## Getting Started
 
+This example shows a minimal example using Recoil Bootstrap. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
+
 First, let's create some atoms in a file called `state.ts`:
 
 ```tsx
 import {
-  bootstrapRootAtom,
+  rootAtom,
   bootstrappedAtom,
   bootstrappedAtomValueHook
 } from 'recoil-bootstrap';
@@ -59,14 +61,13 @@ interface MyBootstrapData {
 }
 
 // Note how this root atom only takes in a key, and is otherwise unconfigurable.
-// By specifying the shape of state here, we get full typing throughout the rest
-// of our atoms/hooks/components/etc.
-export const myBootstrapRootAtom = bootstrapRootAtom<MyBootstrapData>(
-  'myBootstrapRootAtom',
-);
+// By specifying the shape of data here in the TypeScript generic, we get full
+// typing throughout the rest of our atoms/hooks/components/etc.
+export const myRootAtom = rootAtom<MyBootstrapData>(
+myRootAtom);
 
 // Now we create a bootstrapped atom from the root atom to access bootstrap data
-const currentUserAtom = bootstrappedAtom(myBootstrapRootAtom, {
+const currentUserAtom = bootstrappedAtom(myRootAtom, {
   key: 'currentUserAtom',
   initialValue: ({ currentUser }) => currentUser,
 });
@@ -82,7 +83,7 @@ Now let's create some UI in a Next.js page component:
 ```tsx
 import { RecoilRoot } from 'recoil';
 import { BootstrapRoot } from 'recoil-bootstrap';
-import { myBootstrapRootAtom, useCurrentUser } from './state';
+import { myRootAtom, useCurrentUser } from './state';
 
 function MyComponent() {
   // We use the hook created above, which makes sure that we're calling this
@@ -120,7 +121,7 @@ export default function MyApp({ bootstrapData }) {
     <RecoilRoot>
       <BootstrapRoot
         bootstrapData={bootstrapData}
-        bootstrapRootAtom={myBootstrapRootAtom}
+        rootAtom={myRootAtom}
       >
         <MyComponent />
       </BootstrapRoot>
@@ -149,7 +150,7 @@ function AppWrapper({ commonBootstrapData, children }) {
     <RecoilRoot>
       <BootstrapRoot
         bootstrapData={commonBootstrapData}
-        bootstrapRootAtom={commonBootstrapRootAtom}
+        rootAtom={commonRootAtom}
       >
       </BootstrapRoot>
     </RecoilRoot>
@@ -161,7 +162,7 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
     <AppWrapper>
       <BootstrapRoot
         bootstrapData={myPageBootstrapData}
-        bootstrapRootAtom={myPageBootstrapRootAtom}
+        rootAtom={myPageRootAtom}
       >
       </BootstrapRoot>
     </AppWrapper>
@@ -171,7 +172,7 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
 
 When using multiple roots, hooks for accessing data provide guardrails against
 accessing data from the wrong place. If you try and call a bootstrapped hook
-based on `myPageBootstrapRootAtom` on a different page, then you'll get a human
+based on `myPageRootAtom` on a different page, then you'll get a human
 readable error saying you're trying to access it from the wrong place, like so:
 
 <br />
@@ -185,12 +186,12 @@ React Server Components, see my
 
 ## API Specification
 
-### `bootstrapRootAtom`
+### `rootAtom`
 
 Creates a bootstrap root atom.
 
 ```ts
-function bootstrapRootAtom<T>(key: string): RecoilState<T>
+function rootAtom<T>(key: string): RecoilState<T>
 ```
 
 _**Props:**_
@@ -216,14 +217,14 @@ type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
 };
 
 function bootstrappedAtom<AtomValue, BootstrapData>(
-  bootstrapRootAtom: RecoilValue<BootstrapData>,
+  rootAtom: RecoilValue<BootstrapData>,
   options: BootstrappedAtomOptions<AtomValue, BootstrapData>
 ): RecoilState<AtomValue>
 ```
 
 _**Props:**_
 
-`bootstrapRootAtom`: `RecoilValue`
+`rootAtom`: `RecoilValue`
 
 The root atom containing the bootstrap data to initialize this atom with.
 
@@ -272,7 +273,7 @@ This component takes bootstrap data and initializes all root atoms and associate
 ```ts
 interface LocalizedStateProps<BootstrapData> {
   bootstrapData: BootstrapData;
-  bootstrapRootAtom: RecoilState<BootstrapData>;
+  rootAtom: RecoilState<BootstrapData>;
 }
 
 function BootstrapRoot<BootstrapData>(
@@ -285,7 +286,7 @@ _**Props:**_
 
 The bootstrap data to initialize atoms with.
 
-`bootstrapRootAtom`: `RecoilState`
+`rootAtom`: `RecoilState`
 
 The root atom to store the data, which in turn initializes all bootstrapped atoms.
 
