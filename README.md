@@ -7,10 +7,10 @@ Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data i
 - [Getting Started](#getting-started)
 - [Multi-page Apps](#multi-page-apps)
 - [API Specification](#api-specification)
-  - [`rootAtom`](#rootatom)
-  - [`bootstrappedAtom`](#bootstrappedatom)
-  - [`bootstrappedAtomValueHook`](#bootstrappedatomvaluehook)
-  - [`BootstrapRoot`](#bootstraproot)
+  - [`rootAtom(key)`](#rootatomkey)
+  - [`bootstrappedAtom(rootAtom, options)`](#bootstrappedatomrootatom-options)
+  - [`bootstrappedAtomValueHook(bootstrappedAtom)`](#bootstrappedatomvaluehookbootstrappedatom)
+  - [`<BootstrapRoot bootstrapData={} rootAtom={}>...</BootstrapRoot>`](#bootstraproot-bootstrapdata-rootatombootstraproot)
 - [License](#license)
 
 ## Motivation
@@ -186,9 +186,9 @@ React Server Components, see my
 
 ## API Specification
 
-### `rootAtom`
+### `rootAtom(key)`
 
-Creates a bootstrap root atom.
+Creates a root atom.
 
 ```ts
 function rootAtom<T>(key: string): RecoilState<T>
@@ -202,9 +202,9 @@ The key to assign to the root atom.
 
 _**Returns:**_
 
-The bootstrapped root atom to be passed to a corresponding [BoostrapRoot](#BootstrapRoot) component.
+The root atom to be passed to a corresponding [BoostrapRoot](#BootstrapRoot) component.
 
-### `bootstrappedAtom`
+### `bootstrappedAtom(rootAtom, options)`
 
 Creates a bootstrapped atom for accessing bootstrap data.
 
@@ -224,11 +224,11 @@ function bootstrappedAtom<AtomValue, BootstrapData>(
 
 _**Props:**_
 
-`rootAtom`: `RecoilValue`
+`rootAtom`: `RecoilValue<BootstrapData>`
 
 The root atom containing the bootstrap data to initialize this atom with.
 
-`options`: `BootstrappedAtomOptions`
+`options`: `BootstrappedAtomOptions<AtomValue, BootstrapData>`
 
 Options here are the mostly the same as the options passed to the built-in `atom()` function in Recoil. The difference is that the `default` property is _not_ allowed, and there is a new `initialValue` function to replace `default`.
 
@@ -238,13 +238,13 @@ A function to initialize the bootstrapped atom with. This function is called at 
 
 _**Returns:**_
 
-The bootstrapped that can then be passed to [bootstrappedAtomValueHook](#bootstrappedAtomValueHook) to create a hook for safely accessing this data.
+The bootstrapped atom that can then be passed to [bootstrappedAtomValueHook](#bootstrappedAtomValueHook) to create a hook for safely accessing this data. The returned atom is a normal off-the-shelf Recoil atom, and can be used accordingly.
 
 _**Throws:**_
 
 This function will throw an exception if a `default` value is included in `options`.
 
-### `bootstrappedAtomValueHook`
+### `bootstrappedAtomValueHook(bootstrappedAtom)`
 
 Creates a hook for accessing a bootstrapped atom's value safely.
 
@@ -254,7 +254,7 @@ function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>): () => T
 
 _**Props:**_
 
-`bootstrappedAtom`: `RecoilValue`
+`bootstrappedAtom`: `RecoilValue<T>`
 
 The bootstrapped atom to create the accessor hook for
 
@@ -264,9 +264,9 @@ The hook that accesses the value.
 
 _**Throws:**_
 
-Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a function that does not have the corresponding `BootstrapRoot` further up the component tree.
+Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a component that does not have the corresponding `BootstrapRoot` further up the component tree.
 
-### `BootstrapRoot`
+### `<BootstrapRoot bootstrapData={} rootAtom={}>...</BootstrapRoot>`
 
 This component takes bootstrap data and initializes all root atoms and associated bootstrapped atoms.
 
@@ -284,11 +284,11 @@ _**Props:**_
 
 `bootstrapData`: `BootstrapData`
 
-The bootstrap data to initialize atoms with.
+The bootstrap data to initialize bootstrapped atoms with.
 
-`rootAtom`: `RecoilState`
+`rootAtom`: `RecoilState<BootstrapData>`
 
-The root atom to store the data, which in turn initializes all bootstrapped atoms.
+The root atom to store the data, which in turn initializes all bootstrapped atoms associated with it.
 
 ## License
 
