@@ -1,5 +1,7 @@
 # Recoil Bootstrap
 
+Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data in multi-page applications.
+
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
@@ -13,31 +15,22 @@
 
 ## Motivation
 
-[Recoil](https://recoiljs.org/) is a popular new state management framework for
-React with a powerful yet simple API. However, initializing Recoil with runtime
-bootstrap data [is tricky and
-non-obvious](https://github.com/facebookexperimental/Recoil/issues/750),
-especially when used with multi-page app frameworks such as
-[Next.js](https://nextjs.org/). Specific challenges include:
+[Recoil](https://recoiljs.org/) is a popular new state management framework for React with a powerful, yet simple, API. However, initializing Recoil with runtime bootstrap data [is tricky and non-obvious](https://github.com/facebookexperimental/Recoil/issues/750), especially when used with multi-page app frameworks such as [Next.js](https://nextjs.org/). Specific challenges include:
 
-1. Recoil must be initialized with bootstrap data that's been prop-drilled to a component
+1. In multi-page apps, Recoil must be initialized with bootstrap data that's been prop-drilled to a component
      - Thus, bootstrap data is not available to use with the `default` property in the atom descriptor, preventing us from using the standard way of initializing atoms.
      - The recommended way to solve this challenge is to initialize atoms with the `initializeState` property in `RecoilRoot`. As we'll see in challenge 2, this is not viable in multi-page apps.
 2. Bootstrap data varies from page to page
      - Thus, we need to initialize _different atoms_ depending on which page we're on.
-     - While it's possible, if unweildy, to use a `switch(currentRoute)` statement to _initialize_ the atoms, we have to statically import _every_ atom from _every_ page to do the initialization.
-     - Dynamic imports are asynchronous, and thus are incompatible with the synchronous `initializeState` prop.
+     - While it's possible, if unwieldy, to use a `switch(currentRoute)` statement to _initialize_ the atoms, we have to statically import _every_ atom from _every_ page to do the initialization.
+     - Dynamic imports are asynchronous, and thus are incompatible with the synchronous `initializeState` prop, which is otherwise the only way to conditionally import atoms based on the current route.
 3. State needs to be scoped to a React context and not used globally
-     - A Next.js server is rendering multiple requests from multiple users at once, meaning global data is not an option since it wouldn't be "scoped" to a specific user.
+     - A Next.js server is rendering multiple requests from multiple users more or less at once, meaning global data is not an option since it wouldn't be "scoped" to a specific user.
      - This means we can't do tricks like creating a global promise we attach to each atoms `default` prop, and then resolving it once we get the bootstrap data.
 
-Recoil bootstrap solves the challenges listed above. It works by creating "root
-atoms," which are special opaque atoms that hold scoped bootstrap data. These
-atoms are not accessed directly. To acccess this data, we then create
-"bootstrapped atoms" which initialize themselves from a root atom. These
-bootstrapped atoms can then be used to create hooks for reading this data
-safely, ensuring that code only access data available in the React component
-tree the data is intended for.
+All of these challenges together mean that Recoil does not currently include any mechanisms for conveniently initializing Recoil with bootstrapped data in multi-page applications. Recoil Bootstrap provides these mechanisms.
+
+Recoil Bootstrap works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code only access data available in the React component tree the data is intended for.
 
 ## Installation
 

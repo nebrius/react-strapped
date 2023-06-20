@@ -1,7 +1,7 @@
 {
   "name": "recoil-bootstrap",
   "version": "1.0.0",
-  "description": "A set of helpers for initializing recoil at runtime with bootstrap data",
+  "description": "Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data in multi-page applications.",
   "exports": {
     "import": {
       "types": "./dist/esm/types/index.d.ts",
