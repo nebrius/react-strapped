@@ -3,13 +3,26 @@
 'use client';
 
 import type { PropsWithChildren } from 'react';
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import type { RecoilState } from 'recoil';
-import { useRecoilStateLoadable } from 'recoil';
+import { useRecoilSnapshot } from 'recoil';
 
 interface LocalizedStateProps<BootstrapData> {
   bootstrapData: BootstrapData;
   rootAtom: RecoilState<BootstrapData>;
+}
+
+function RootInitializer<BootstrapData>({
+  children,
+  bootstrapData,
+  rootAtom,
+}: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
+  const snapshot = useRecoilSnapshot();
+  snapshot.map(({ set }) => {
+    set(rootAtom, bootstrapData);
+  });
+  snapshot.retain();
+  return <>{children}</>;
 }
 
 export function BootstrapRoot<BootstrapData>({
@@ -17,21 +30,15 @@ export function BootstrapRoot<BootstrapData>({
   bootstrapData,
   rootAtom,
 }: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
-  const [bootstrapDataLoadable, setBootstrapData] =
-    useRecoilStateLoadable(rootAtom);
-  // We only want to initialize once, even if bootstrap data changes. If
-  // bootstrap data changes, it's a bug in the calling code
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setBootstrapData(bootstrapData), []);
-  switch (bootstrapDataLoadable.state) {
-    case 'loading': {
-      return null;
-    }
-    case 'hasError': {
-      throw bootstrapDataLoadable.contents;
-    }
-    case 'hasValue': {
-      return <>{children}</>;
-    }
+  const isInitializedRef = useRef(false);
+  if (!isInitializedRef.current) {
+    isInitializedRef.current = true;
+    return (
+      <RootInitializer bootstrapData={bootstrapData} rootAtom={rootAtom}>
+        {children}
+      </RootInitializer>
+    );
+  } else {
+    return <>{children}</>;
   }
 }
