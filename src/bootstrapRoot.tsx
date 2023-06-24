@@ -3,27 +3,17 @@
 'use client';
 
 import type { PropsWithChildren } from 'react';
-import React, { useRef } from 'react';
+import React from 'react';
 import type { RecoilState } from 'recoil';
-import { useGotoRecoilSnapshot, useRecoilSnapshot } from 'recoil';
+import {
+  useGotoRecoilSnapshot,
+  useRecoilSnapshot,
+  useRecoilStateLoadable,
+} from 'recoil';
 
 interface LocalizedStateProps<BootstrapData> {
   bootstrapData: BootstrapData;
   rootAtom: RecoilState<BootstrapData>;
-}
-
-function RootInitializer<BootstrapData>({
-  children,
-  bootstrapData,
-  rootAtom,
-}: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
-  const snapshot = useRecoilSnapshot();
-  const gotoRecoilSnapshot = useGotoRecoilSnapshot();
-  const loadedSnapshot = snapshot.map(({ set }) => {
-    set(rootAtom, bootstrapData);
-  });
-  gotoRecoilSnapshot(loadedSnapshot);
-  return <>{children}</>;
 }
 
 export function BootstrapRoot<BootstrapData>({
@@ -31,15 +21,14 @@ export function BootstrapRoot<BootstrapData>({
   bootstrapData,
   rootAtom,
 }: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
-  const isInitializedRef = useRef(false);
-  if (!isInitializedRef.current) {
-    isInitializedRef.current = true;
-    return (
-      <RootInitializer bootstrapData={bootstrapData} rootAtom={rootAtom}>
-        {children}
-      </RootInitializer>
-    );
-  } else {
-    return <>{children}</>;
+  const snapshot = useRecoilSnapshot();
+  const gotoRecoilSnapshot = useGotoRecoilSnapshot();
+  const [bootstrapDataLoadable] = useRecoilStateLoadable(rootAtom);
+  if (bootstrapDataLoadable.state === 'loading') {
+    const loadedSnapshot = snapshot.map(({ set }) => {
+      set(rootAtom, bootstrapData);
+    });
+    gotoRecoilSnapshot(loadedSnapshot);
   }
+  return <>{children}</>;
 }
