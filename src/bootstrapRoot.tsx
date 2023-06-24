@@ -5,7 +5,7 @@
 import type { PropsWithChildren } from 'react';
 import React, { useRef } from 'react';
 import type { RecoilState } from 'recoil';
-import { useRecoilSnapshot } from 'recoil';
+import { useGotoRecoilSnapshot, useRecoilSnapshot } from 'recoil';
 
 interface LocalizedStateProps<BootstrapData> {
   bootstrapData: BootstrapData;
@@ -18,10 +18,11 @@ function RootInitializer<BootstrapData>({
   rootAtom,
 }: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
   const snapshot = useRecoilSnapshot();
-  snapshot.map(({ set }) => {
+  const gotoRecoilSnapshot = useGotoRecoilSnapshot();
+  const loadedSnapshot = snapshot.map(({ set }) => {
     set(rootAtom, bootstrapData);
   });
-  snapshot.retain();
+  gotoRecoilSnapshot(loadedSnapshot);
   return <>{children}</>;
 }
 
