@@ -1,6 +1,6 @@
 # Recoil Bootstrap
 
-Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data in multi-page applications.
+Recoil Bootstrap provides mechanisms that make it straightforward to initialize Recoil with runtime bootstrap data in multi-page applications. Recoil is intentionally small with no runtime dependencies.
 
 - [Motivation](#motivation)
 - [Installation](#installation)
@@ -30,8 +30,6 @@ Recoil Bootstrap enables apps to initialize Recoil with runtime bootstrap data i
 
 All of these challenges together mean that Recoil does not currently include any mechanisms for conveniently initializing Recoil with bootstrapped data in multi-page applications. Recoil Bootstrap provides these mechanisms.
 
-Recoil Bootstrap works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code only access data available in the React component tree the data is intended for.
-
 ## Installation
 
 Install Recoil Bootstrap from npm with:
@@ -42,6 +40,8 @@ npm install recoil-bootstrap
 
 ## Getting Started
 
+Recoil Bootstrap works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data initialized on first render. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code only access data available in the React component tree the data is intended for.
+
 This example shows a minimal example using Recoil Bootstrap. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
 
 First, let's create some atoms in a file called `state.ts`:
@@ -50,21 +50,20 @@ First, let's create some atoms in a file called `state.ts`:
 import {
   rootAtom,
   bootstrappedAtom,
-  bootstrappedAtomValueHook
+  bootstrappedAtomValueHook,
 } from 'recoil-bootstrap';
 
-interface MyBootstrapData {
+export interface MyBootstrapData {
   currentUser: {
     name: string;
     age: number;
-  }
+  };
 }
 
-// Note how this root atom only takes in a key, and is otherwise unconfigurable.
+// See how this root atom only takes in a key, and is otherwise unconfigurable.
 // By specifying the shape of data here in the TypeScript generic, we get full
 // typing throughout the rest of our atoms/hooks/components/etc.
-export const myRootAtom = rootAtom<MyBootstrapData>(
-myRootAtom);
+export const myRootAtom = rootAtom<MyBootstrapData>('myRootAtom');
 
 // Now we create a bootstrapped atom from the root atom to access bootstrap data
 const currentUserAtom = bootstrappedAtom(myRootAtom, {
@@ -83,6 +82,8 @@ Now let's create some UI in a Next.js page component:
 ```tsx
 import { RecoilRoot } from 'recoil';
 import { BootstrapRoot } from 'recoil-bootstrap';
+
+import type { MyBootstrapData } from './state';
 import { myRootAtom, useCurrentUser } from './state';
 
 function MyComponent() {
@@ -95,34 +96,34 @@ function MyComponent() {
   );
 }
 
+interface PageProps {
+  bootstrapData: MyBootstrapData;
+}
+
 // If you're not familiar with Next.js, this function runs on a server and is
 // responsible for fetching bootstrap data. The value of the `props` property is
 // passed as props to the default export in this file.
 export function getServerSideProps() {
-  return {
-    props: {
-      bootstrapData: {
-        currentUser: {
-          name: 'Philip J Fry',
-          age: 1_026
-        }
-      }
-    }
+  const props: PageProps = {
+    bootstrapData: {
+      currentUser: {
+        name: 'Philip J Fry',
+        age: 1_026,
+      },
+    },
   };
+  return { props };
 }
 
 // This default export is the root component in a Next.js page. The props
-// passed to this component come from the server
-export default function MyApp({ bootstrapData }) {
+// passed to this component come from the server via `getServerSideProps`
+export default function MyApp({ bootstrapData }: PageProps) {
   return (
     // We create our recoil root as normal, and then create our bootstrap root
-    // with our bootstrap data and bootstrap atom. The BootstrapRoot component
+    // with our bootstrap data and bootstrap atom. The <BootstrapRoot> component
     // does the work of correlating our bootstrapped atoms with bootstrap data.
     <RecoilRoot>
-      <BootstrapRoot
-        bootstrapData={bootstrapData}
-        rootAtom={myRootAtom}
-      >
+      <BootstrapRoot bootstrapData={bootstrapData} rootAtom={myRootAtom}>
         <MyComponent />
       </BootstrapRoot>
     </RecoilRoot>
@@ -132,15 +133,11 @@ export default function MyApp({ bootstrapData }) {
 
 ## Multi-page Apps
 
-You can have as many bootstrap roots as you want with any amount of nesting.
-Recoil Bootstrap is designed specifically for multi-page applications. In these
-applications, we often have a set of bootstrap data that is common to all pages,
-as well as bootstrap data that is specific to a page.
+Recoil Bootstrap is designed specifically for multi-page applications, which it enables via multiple `<BootstrapRoot>` components. You can have as many bootstrap roots as you want with any amount of nesting.
 
-With Recoil Bootstrap, you can create one bootstrap root for the common
-bootstrap data that exists on all pages, and then per-page bootstrap roots that
-contain that pages data. If bootstrap data exists across a few pages, you can
-create a third bootstrap root for them.
+In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page.
+
+With Recoil Bootstrap, you can create one bootstrap root for the common bootstrap data that exists on all pages, and then per-page bootstrap roots that contain that pages data.
 
 This would look like:
 
@@ -170,19 +167,16 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
 }
 ```
 
-When using multiple roots, hooks for accessing data provide guardrails against
-accessing data from the wrong place. If you try and call a bootstrapped hook
-based on `myPageRootAtom` on a different page, then you'll get a human
-readable error saying you're trying to access it from the wrong place, like so:
+If bootstrap data exists across a few pages, you can create a third bootstrap root for them that is shared between them.
+
+When using multiple roots, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a bootstrapped hook based on `myPageRootAtom` on a different page, then you'll get a human readable error saying you're trying to access it from the wrong place, like so:
 
 <br />
 <p align="center">
   <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
 </p>
 
-For an in-depth example of a multi-page Next.js app using Recoil Bootstrap and
-React Server Components, see my
-[recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
+For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
 
 ## API Specification
 
