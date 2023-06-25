@@ -135,9 +135,7 @@ export default function MyApp({ bootstrapData }: PageProps) {
 
 Recoil Bootstrap is designed specifically for multi-page applications, which it enables via multiple `<BootstrapRoot>` components. You can have as many bootstrap roots as you want with any amount of nesting.
 
-In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page.
-
-With Recoil Bootstrap, you can create one bootstrap root for the common bootstrap data that exists on all pages, and then per-page bootstrap roots that contain that pages data.
+In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. With Recoil Bootstrap, you can create one bootstrap root for the common bootstrap data that exists on all pages, and then per-page bootstrap roots that contain those pages' data.
 
 This would look like:
 
@@ -149,6 +147,7 @@ function AppWrapper({ commonBootstrapData, children }) {
         bootstrapData={commonBootstrapData}
         rootAtom={commonRootAtom}
       >
+        {children}
       </BootstrapRoot>
     </RecoilRoot>
   );
@@ -156,7 +155,7 @@ function AppWrapper({ commonBootstrapData, children }) {
 
 export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
   return (
-    <AppWrapper>
+    <AppWrapper commonBootstrapData={commonBootstrapData}>
       <BootstrapRoot
         bootstrapData={myPageBootstrapData}
         rootAtom={myPageRootAtom}
@@ -167,7 +166,7 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
 }
 ```
 
-If bootstrap data exists across a few pages, you can create a third bootstrap root for them that is shared between them.
+If bootstrap data exists across a few pages, you can create a third bootstrap root that is shared between these pages.
 
 When using multiple roots, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a bootstrapped hook based on `myPageRootAtom` on a different page, then you'll get a human readable error saying you're trying to access it from the wrong place, like so:
 
@@ -228,7 +227,7 @@ Options here are the mostly the same as the options passed to the built-in `atom
 
 `options.initialValue`: `(bootstrapData: BootstrapData) => AtomValue`
 
-A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BoostrapRoot](#BootstrapRoot)
+A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BoostrapRoot](#BootstrapRoot). The atom's value is then set to the value returned from this function.
 
 _**Returns:**_
 
@@ -258,11 +257,11 @@ The hook that accesses the value.
 
 _**Throws:**_
 
-Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a component that does not have the corresponding `BootstrapRoot` further up the component tree.
+Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a component that does not have the correct corresponding `BootstrapRoot` further up the component tree as a parent of this component.
 
 ### `<BootstrapRoot bootstrapData={} rootAtom={}>...</BootstrapRoot>`
 
-This component takes bootstrap data and initializes all root atoms and associated bootstrapped atoms.
+This component initializes the supplied root atom and its associated bootstrapped atoms with the supplied bootstrap data.
 
 ```ts
 interface LocalizedStateProps<BootstrapData> {
@@ -282,7 +281,7 @@ The bootstrap data to initialize bootstrapped atoms with.
 
 `rootAtom`: `RecoilState<BootstrapData>`
 
-The root atom to store the data, which in turn initializes all bootstrapped atoms associated with it.
+The root atom to store the bootstrap data, which in turn initializes all bootstrapped atoms associated with it.
 
 ## License
 
