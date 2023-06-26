@@ -1,11 +1,23 @@
 # Recoil Bootstrap
 
+<p align="center">
+  <img alt="version" src="https://img.shields.io/npm/v/recoil-bootstrap" />
+  <img alt="license" src="https://img.shields.io/npm/l/recoil-bootstrap" />
+  <img alt="bundle size" src="https://img.shields.io/bundlephobia/min/recoil-bootstrap">
+</p>
+
+
 Recoil Bootstrap provides mechanisms that make it straightforward to initialize Recoil with runtime bootstrap data in multi-page applications. Recoil is intentionally small with no runtime dependencies.
 
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Multi-page Apps](#multi-page-apps)
+- [Frequently Asked Questions](#frequently-asked-questions)
+  - [Is it possible to reset bootstrap data?](#is-it-possible-to-reset-bootstrap-data)
+  - [Can I reuse root atoms across different bootstrap roots?](#can-i-reuse-root-atoms-across-different-bootstrap-roots)
+  - [Is Recoil Bootstrap server side rendering friendly?](#is-recoil-bootstrap-server-side-rendering-friendly)
+  - [Is Recoil Bootstrap React Server Components friendly?](#is-recoil-bootstrap-react-server-components-friendly)
 - [API Specification](#api-specification)
   - [`rootAtom(key)`](#rootatomkey)
   - [`bootstrappedAtom(rootAtom, options)`](#bootstrappedatomrootatom-options)
@@ -176,6 +188,26 @@ When using multiple roots, hooks for accessing data provide guardrails against a
 </p>
 
 For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
+
+## Frequently Asked Questions
+
+### Is it possible to reset bootstrap data?
+
+Not currently, but it's on the roadmap. See https://github.com/nebrius/recoil-bootstrap/issues/1 for more information.
+
+### Can I reuse root atoms across different bootstrap roots?
+
+No. When this happens, the last bootstrap root to be initialized will win, and any previous initialization data will be discarded. In addition, once I get support for resetting bootstrap data implemented, this could break client-side routing because one of the roots could be unmounted while the other is still mounted. This would cause the bootstrapped atom to be put back in a loading state and would start throwing exceptions in the still-mounted bootstrap root component tree.
+
+### Is Recoil Bootstrap server side rendering friendly?
+
+Yes. Initialization happens synchronously, so all data will be available for the single rendering pass that happens in server side rendering.
+
+### Is Recoil Bootstrap React Server Components friendly?
+
+Yes, ish. Recoil Bootstrap works just fine with React Server Components. Each server component that fetches bootstrap data can be assigned its own `<BootstrapRoot>` to contain that component tree's bootstrap data.
+
+The catch is that hooks cannot be used inside of React Server Components, meaning that Recoil can only be used in client-only components. As such, Recoil Bootstrap is also limited to client-only components.
 
 ## API Specification
 
