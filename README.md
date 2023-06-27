@@ -2,8 +2,12 @@
 
 <p align="center">
   <img alt="version" src="https://img.shields.io/npm/v/recoil-bootstrap" />
-  <img alt="license" src="https://img.shields.io/npm/l/recoil-bootstrap" />
-  <img alt="bundle size" src="https://img.shields.io/bundlephobia/min/recoil-bootstrap">
+  <a href="https://bundlephobia.com/package/recoil-bootstrap">
+    <img alt="bundle size" src="https://img.shields.io/bundlephobia/min/recoil-bootstrap" />
+  </a>
+  <a href="https://github.com/nebrius/recoil-bootstrap/actions/workflows/tests.yml">
+    <img alt="build status" src="https://github.com/nebrius/recoil-bootstrap/actions/workflows/tests.yml/badge.svg" />
+  </a>
 </p>
 
 
