@@ -10,5 +10,8 @@
     "moduleResolution": "Node",
     "outDir": "./dist/cjs",
     "declarationDir": "./dist/cjs/types"
-  }
+  },
+  "include": [
+    "./src/**/*"
+  ]
 }

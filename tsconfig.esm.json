@@ -10,5 +10,8 @@
     "moduleResolution": "NodeNext",
     "outDir": "./dist/esm",
     "declarationDir": "./dist/esm/types"
-  }
+  },
+  "include": [
+    "./src/**/*"
+  ]
 }
