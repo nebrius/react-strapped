@@ -21,10 +21,34 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
   },
 };
 
+test('Initializes root atoms synchronously', () => {
+  const testRootAtom = rootAtom('testRootAtom1');
+  let rootLoadableState: Loadable<TestBootstrapData>['state'] | undefined;
+
+  function TestApp() {
+    const loadable = useRecoilValueLoadable(testRootAtom);
+    rootLoadableState = loadable.state;
+    return null;
+  }
+
+  render(
+    <RecoilRoot>
+      <BootstrapRoot
+        bootstrapData={TEST_BOOTSTRAP_DATA}
+        rootAtom={testRootAtom}
+      >
+        <TestApp />
+      </BootstrapRoot>
+    </RecoilRoot>,
+  );
+
+  expect(rootLoadableState).toEqual('hasValue');
+});
+
 // TODO: this test throws a Recoil warning that may or may not be safe to
 // ignore. See https://github.com/facebookexperimental/Recoil/issues/12
-test('Can initialize a root atom', async () => {
-  const testRootAtom = rootAtom('testRootAtom');
+test("Doesn't initialize root atoms until after bootstrap root is rendered", async () => {
+  const testRootAtom = rootAtom('testRootAtom2');
   let rootLoadableState: Loadable<TestBootstrapData>['state'] | undefined;
 
   function TestApp() {
