@@ -19,20 +19,22 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
   },
 };
 
-test('Bootstrapped atoms are passed initial bootstrap values', async () => {
+test('Bootstrapped atoms initialize their values correctly', () => {
   const testRootAtom = rootAtom<TestBootstrapData>(
     'testRootAtomForBootstrappedAtom1',
   );
-  const mockedInitialValue = jest.fn();
   const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
     key: 'testBootstrappedAtom1',
-    initialValue: mockedInitialValue,
+    initialValue(bootstrapData) {
+      expect(bootstrapData).toStrictEqual(TEST_BOOTSTRAP_DATA);
+      return bootstrapData.user;
+    },
   });
 
   function TestApp() {
-    // Atom values have to be referenced before they're initialized, so we
-    // reference it here and discard the value, since we don't need.
-    useRecoilValue(testBootstrappedAtom);
+    expect(useRecoilValue(testBootstrappedAtom)).toStrictEqual(
+      TEST_BOOTSTRAP_DATA.user,
+    );
     return null;
   }
 
@@ -46,6 +48,4 @@ test('Bootstrapped atoms are passed initial bootstrap values', async () => {
       </BootstrapRoot>
     </RecoilRoot>,
   );
-
-  expect(mockedInitialValue).toHaveBeenCalledWith(TEST_BOOTSTRAP_DATA);
 });
