@@ -49,3 +49,17 @@ test('Bootstrapped atoms initialize their values correctly', () => {
     </RecoilRoot>,
   );
 });
+
+test("Bootstrapped atoms aren't allowed to have a default prop", () => {
+  const testRootAtom = rootAtom<TestBootstrapData>(
+    'testRootAtomForBootstrappedAtom2',
+  );
+  expect(() =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    bootstrappedAtom(testRootAtom, {
+      key: 'testBootstrappedAtom2',
+      default: 10,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any),
+  ).toThrow();
+});
