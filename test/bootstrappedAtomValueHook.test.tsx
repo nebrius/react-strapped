@@ -5,10 +5,9 @@ import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
 import {
-  BootstrapRoot,
+  createBootstrapRoot,
   bootstrappedAtom,
   bootstrappedAtomValueHook,
-  rootAtom,
 } from '../src';
 
 interface TestBootstrapData {
@@ -26,8 +25,8 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('BootstrappedAtomValueHook returns the correct value', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
-  const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
+  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -40,19 +39,16 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
 
   render(
     <RecoilRoot>
-      <BootstrapRoot
-        bootstrapData={TEST_BOOTSTRAP_DATA}
-        rootAtom={testRootAtom}
-      >
+      <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
         <TestApp />
-      </BootstrapRoot>
+      </TestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
 test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
-  const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
+  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });

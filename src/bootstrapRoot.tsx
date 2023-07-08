@@ -12,6 +12,7 @@ import {
   initialValueSymbol,
   attachedAtomsSymbol,
   BootstrapRootContext,
+  bootstrappedAtomIdSymbol,
 } from './util';
 
 let nextProviderId = 0;
@@ -84,7 +85,10 @@ export function createBootstrapRoot<
         value={{
           id: providerId,
           parentIds: [...parentBootstrapRoot.parentIds, providerId],
-          attachedAtomIds: [],
+          attachedAtomIds: [
+            ...parentBootstrapRoot.attachedAtomIds,
+            ...attachedAtoms.map((atom) => atom[bootstrappedAtomIdSymbol]),
+          ],
         }}
       >
         {children}

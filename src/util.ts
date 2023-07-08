@@ -28,14 +28,16 @@ export interface BootstrapRoot<BootstrapData> {
   [attachedAtomsSymbol]: Array<BootstrappedRecoilAtom<any, BootstrapData>>;
 }
 
-// This context maintains the id for the current bootstrap root and the parent
-// ids of its parent bootstrap roots (if any).
+// This context maintains all information about a given bootstrap root, and is
+// mostly used to verify that things are being used in the correct place
 export const BootstrapRootContext = createContext<{
   id: number;
   parentIds: number[];
   attachedAtomIds: number[];
 }>({
-  // This default data indicates that this is outside of a bootstrap root context
+  // This default data indicates that this is outside of a bootstrap root
+  // context, although currently it's just used to simplify TypeScript typing
+  // and isn't used in practice
   id: NaN,
   parentIds: [],
   attachedAtomIds: [],

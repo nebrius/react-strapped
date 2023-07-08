@@ -4,7 +4,7 @@ import React from 'react';
 import { RecoilRoot, useRecoilValue } from 'recoil';
 
 import { getUniqueTestKey } from './util';
-import { BootstrapRoot, bootstrappedAtom, rootAtom } from '../src';
+import { createBootstrapRoot, bootstrappedAtom } from '../src';
 
 interface TestBootstrapData {
   user: {
@@ -20,9 +20,9 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
   },
 };
 
-test('Bootstrapped atoms initialize their values correctly', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
-  const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
+test('Bootstrapped atoms synchronously initialize their values correctly', () => {
+  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue(bootstrapData) {
       expect(bootstrapData).toStrictEqual(TEST_BOOTSTRAP_DATA);
@@ -39,23 +39,20 @@ test('Bootstrapped atoms initialize their values correctly', () => {
 
   render(
     <RecoilRoot>
-      <BootstrapRoot
-        bootstrapData={TEST_BOOTSTRAP_DATA}
-        rootAtom={testRootAtom}
-      >
+      <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
         <TestApp />
-      </BootstrapRoot>
+      </TestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
-test("Bootstrapped atoms aren't allowed to have a get prop", () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
+test("Bootstrapped atoms aren't allowed to have a default prop", () => {
+  const BootstrapRoot = createBootstrapRoot<TestBootstrapData>();
   expect(() =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    bootstrappedAtom(testRootAtom, {
+    bootstrappedAtom(BootstrapRoot, {
       key: getUniqueTestKey(),
-      get: () => 10,
+      default: 10,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),
   ).toThrow();

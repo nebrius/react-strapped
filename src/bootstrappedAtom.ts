@@ -65,7 +65,8 @@ export function bootstrappedAtom<AtomValue, BootstrapData>(
 
   // We attach the bootstrap atom ID so we can check it against known atoms when
   // referencing them in value hooks to make sure we're accessing them in the
-  // correct root.
+  // correct root. We store this using a symbol so that it doesn't leak into the
+  // public API.
   newAtom[bootstrappedAtomIdSymbol] = nextBootstrappedAtomId++;
 
   // Add this atom to the bootstrap root's list of atoms so it can be properly

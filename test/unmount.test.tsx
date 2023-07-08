@@ -1,15 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { Suspense, useState } from 'react';
-import type { Loadable } from 'recoil';
-import { useRecoilValueLoadable, RecoilRoot } from 'recoil';
+import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
 import {
-  BootstrapRoot,
+  createBootstrapRoot,
   bootstrappedAtom,
   bootstrappedAtomValueHook,
-  rootAtom,
 } from '../src';
 
 interface TestBootstrapData {
@@ -33,50 +31,9 @@ const TEST_BOOTSTRAP_DATA_2: TestBootstrapData = {
   },
 };
 
-test('Puts root atoms back into loading state after unmount', async () => {
-  const testRootAtom = rootAtom(getUniqueTestKey());
-  let rootLoadableState: Loadable<TestBootstrapData>['state'] | undefined;
-
-  function TestApp() {
-    const [shouldRender, setShouldRender] = useState(true);
-    const loadable = useRecoilValueLoadable(testRootAtom);
-    rootLoadableState = loadable.state;
-
-    let contents: JSX.Element | null;
-    if (shouldRender) {
-      contents = (
-        <BootstrapRoot
-          bootstrapData={TEST_BOOTSTRAP_DATA_1}
-          rootAtom={testRootAtom}
-        />
-      );
-    } else {
-      contents = null;
-    }
-
-    return (
-      <>
-        <button onClick={() => setShouldRender(false)}>Unload Recoil</button>
-        {contents}
-      </>
-    );
-  }
-
-  render(
-    <RecoilRoot>
-      <TestApp />
-    </RecoilRoot>,
-  );
-
-  expect(rootLoadableState).toEqual('hasValue');
-
-  await userEvent.click(screen.getByText('Unload Recoil'));
-  expect(rootLoadableState).toEqual('loading');
-});
-
 test('Resets default state on remount', async () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
-  const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
+  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -96,13 +53,12 @@ test('Resets default state on remount', async () => {
     return (
       <>
         <button onClick={() => setKey(1)}>Reset Recoil</button>
-        <BootstrapRoot
+        <TestBootstrapRoot.Provider
           key={`test-${key}`}
           bootstrapData={key ? TEST_BOOTSTRAP_DATA_2 : TEST_BOOTSTRAP_DATA_1}
-          rootAtom={testRootAtom}
         >
           <Contents />
-        </BootstrapRoot>
+        </TestBootstrapRoot.Provider>
       </>
     );
   }

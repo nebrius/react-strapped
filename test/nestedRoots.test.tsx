@@ -5,10 +5,9 @@ import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
 import {
-  BootstrapRoot,
+  createBootstrapRoot,
   bootstrappedAtom,
   bootstrappedAtomValueHook,
-  rootAtom,
 } from '../src';
 
 interface OuterTestBootstrapData {
@@ -40,10 +39,8 @@ const INNER_TEST_BOOTSTRAP_DATA: InnerTestBootstrapData = {
 };
 
 test('Bootstrap roots can be nested', () => {
-  const outerTestRootAtom = rootAtom<OuterTestBootstrapData>(
-    getUniqueTestKey(),
-  );
-  const outerBootstrappedAtom = bootstrappedAtom(outerTestRootAtom, {
+  const OuterTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
+  const outerBootstrappedAtom = bootstrappedAtom(OuterTestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
@@ -51,10 +48,8 @@ test('Bootstrap roots can be nested', () => {
     outerBootstrappedAtom,
   );
 
-  const innerTestRootAtom = rootAtom<InnerTestBootstrapData>(
-    getUniqueTestKey(),
-  );
-  const innerBootstrappedAtom = bootstrappedAtom(innerTestRootAtom, {
+  const InnerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
+  const innerBootstrappedAtom = bootstrappedAtom(InnerTestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -74,26 +69,22 @@ test('Bootstrap roots can be nested', () => {
 
   render(
     <RecoilRoot>
-      <BootstrapRoot
+      <OuterTestBootstrapRoot.Provider
         bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
-        rootAtom={outerTestRootAtom}
       >
-        <BootstrapRoot
+        <InnerTestBootstrapRoot.Provider
           bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
-          rootAtom={innerTestRootAtom}
         >
           <TestApp />
-        </BootstrapRoot>
-      </BootstrapRoot>
+        </InnerTestBootstrapRoot.Provider>
+      </OuterTestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
 test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
-  const outerTestRootAtom = rootAtom<OuterTestBootstrapData>(
-    getUniqueTestKey(),
-  );
-  const outerBootstrappedAtom = bootstrappedAtom(outerTestRootAtom, {
+  const OuterTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
+  const outerBootstrappedAtom = bootstrappedAtom(OuterTestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
@@ -101,10 +92,8 @@ test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
     outerBootstrappedAtom,
   );
 
-  const innerTestRootAtom = rootAtom<InnerTestBootstrapData>(
-    getUniqueTestKey(),
-  );
-  const innerBootstrappedAtom = bootstrappedAtom(innerTestRootAtom, {
+  const InnerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
+  const innerBootstrappedAtom = bootstrappedAtom(InnerTestBootstrapRoot, {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -127,16 +116,14 @@ test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
 
   render(
     <RecoilRoot>
-      <BootstrapRoot
+      <OuterTestBootstrapRoot.Provider
         bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
-        rootAtom={outerTestRootAtom}
       >
-        <BootstrapRoot
+        <InnerTestBootstrapRoot.Provider
           bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
-          rootAtom={innerTestRootAtom}
         />
         <TestApp />
-      </BootstrapRoot>
+      </OuterTestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
