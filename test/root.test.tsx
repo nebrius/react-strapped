@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import type { Loadable } from 'recoil';
 import { RecoilRoot, useRecoilValueLoadable } from 'recoil';
 
+import { getUniqueTestKey } from './util';
 import { BootstrapRoot, rootAtom } from '../src';
 
 interface TestBootstrapData {
@@ -22,7 +23,7 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('Initializes root atoms synchronously', () => {
-  const testRootAtom = rootAtom('testRootAtom1');
+  const testRootAtom = rootAtom(getUniqueTestKey());
   let rootLoadableState: Loadable<TestBootstrapData>['state'] | undefined;
 
   function TestApp() {
@@ -48,7 +49,7 @@ test('Initializes root atoms synchronously', () => {
 // TODO: this test throws a Recoil warning that may or may not be safe to
 // ignore. See https://github.com/facebookexperimental/Recoil/issues/12
 test("Doesn't initialize root atoms until after bootstrap root is rendered", async () => {
-  const testRootAtom = rootAtom('testRootAtom2');
+  const testRootAtom = rootAtom(getUniqueTestKey());
   let rootLoadableState: Loadable<TestBootstrapData>['state'] | undefined;
 
   function TestApp() {
