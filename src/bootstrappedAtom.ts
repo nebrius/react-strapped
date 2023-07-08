@@ -1,6 +1,9 @@
 import type { AtomOptions, RecoilValue } from 'recoil';
 import { atom, selector } from 'recoil';
 
+import type { BootstrappedRecoilAtom } from './util';
+import { rootAtomSymbol } from './util';
+
 type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
   AtomOptions<AtomValue>,
   'default'
@@ -27,7 +30,7 @@ export function bootstrappedAtom<AtomValue, BootstrapData>(
       'The "default" prop is not allowed in bootstrapped atoms. Use "initialValue" instead',
     );
   }
-  return atom({
+  const newAtom = atom({
     ...options,
     key,
     // We set the default to a selector so that we can grab the bootstrap data
@@ -38,5 +41,12 @@ export function bootstrappedAtom<AtomValue, BootstrapData>(
       // is created but in a loadable state?
       get: ({ get }) => initialValue(get(rootAtom)),
     }),
-  });
+    // We have to do an `as` cast here because the rootAtomSymbol property is
+    // currently missing. Technically this is a gap in typing (which I call a
+    // "type hole"), but we set it correctly in the next line anyways.
+  }) as BootstrappedRecoilAtom<AtomValue, BootstrapData>;
+
+  newAtom[rootAtomSymbol] = rootAtom;
+
+  return newAtom;
 }

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import { RecoilRoot, useRecoilValue } from 'recoil';
+import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
 import {
@@ -47,6 +47,9 @@ test('Bootstrap roots can be nested', () => {
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
+  const useOuterTestValueHook = bootstrappedAtomValueHook(
+    outerBootstrappedAtom,
+  );
 
   const innerTestRootAtom = rootAtom<InnerTestBootstrapData>(
     getUniqueTestKey(),
@@ -55,12 +58,15 @@ test('Bootstrap roots can be nested', () => {
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
+  const useInnerTestValueHook = bootstrappedAtomValueHook(
+    innerBootstrappedAtom,
+  );
 
   function TestApp() {
-    expect(useRecoilValue(outerBootstrappedAtom)).toStrictEqual(
+    expect(useOuterTestValueHook()).toStrictEqual(
       OUTER_TEST_BOOTSTRAP_DATA.ship,
     );
-    expect(useRecoilValue(innerBootstrappedAtom)).toStrictEqual(
+    expect(useInnerTestValueHook()).toStrictEqual(
       INNER_TEST_BOOTSTRAP_DATA.user,
     );
     return null;
@@ -83,8 +89,7 @@ test('Bootstrap roots can be nested', () => {
   );
 });
 
-// TODO: re-implement this test once the behavior is fixed
-test.skip('Nested bootstrap roots cannot be accessed outside of their tree', () => {
+test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
   const outerTestRootAtom = rootAtom<OuterTestBootstrapData>(
     getUniqueTestKey(),
   );
