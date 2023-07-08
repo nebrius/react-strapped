@@ -1,6 +1,6 @@
 # Changelog
 
-## ?
+## 1.0.2 (07/08/2023)
 
 - Fixed bug where bootstrapped atoms can be accessed outside of their bootstrap roots when still accessed inside of the Recoil root.
 - Added JSDoc comments for everything exported from this module.
