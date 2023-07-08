@@ -2,71 +2,98 @@
 // as the first client-side-only component in a tree
 'use client';
 
-import type { PropsWithChildren } from 'react';
-import React, { useContext } from 'react';
-import type { RecoilState } from 'recoil';
+import React, { useContext, useEffect, useRef } from 'react';
+import { useRecoilCallback } from 'recoil';
+
 import {
-  useGotoRecoilSnapshot,
-  useRecoilSnapshot,
-  useRecoilStateLoadable,
-} from 'recoil';
+  type BootstrapRoot,
+  type BootstrappedRecoilAtom,
+  type ProviderProps,
+  initialValueSymbol,
+  attachedAtomsSymbol,
+  BootstrapRootContext,
+} from './util';
 
-import { BootstrapRootsInScopeContext } from './util';
+let nextProviderId = 0;
 
-interface LocalizedStateProps<BootstrapData> {
-  bootstrapData: BootstrapData;
-  rootAtom: RecoilState<BootstrapData>;
-}
+export function createBootstrapRoot<
+  BootstrapData = never,
+>(): BootstrapRoot<BootstrapData> {
+  const providerId = nextProviderId++;
+  const attachedAtoms: Array<BootstrappedRecoilAtom<unknown, BootstrapData>> =
+    [];
 
-/**
- * This component initializes the supplied root atom and its associated
- * bootstrapped atoms with the supplied bootstrap data.
- *
- * @param props.bootstrapData The bootstrap data to initialize bootstrapped
- *  atoms with.
- * @param props.rootAtom The root atom to store the bootstrap data, which in
- *  turn initializes all bootstrapped atoms associated with it.
- */
-export function BootstrapRoot<BootstrapData>({
-  children,
-  bootstrapData,
-  rootAtom,
-}: PropsWithChildren<LocalizedStateProps<BootstrapData>>) {
-  // We get the loadable version of the root atom to check if it's in a loadable
-  // state or not. Being in a loadable state tells us that the root atom has not
-  // been initialized with bootstrap data yet, and that we should do so now.
-  const [bootstrapDataLoadable] = useRecoilStateLoadable(rootAtom);
+  function Provider({ children, bootstrapData }: ProviderProps<BootstrapData>) {
+    // We use snapshots to set bootstrapped atom values instead of the typical
+    // `useRecoilState` setter because the latter is asynchronous and would
+    // result in bootstrap data not being available for the first render.
+    const setBootstrapData = useRecoilCallback(
+      ({ snapshot, gotoSnapshot }) =>
+        () => {
+          gotoSnapshot(
+            snapshot.map(({ set }) => {
+              for (const attachedAtom of attachedAtoms) {
+                set(
+                  attachedAtom,
+                  attachedAtom[initialValueSymbol](bootstrapData),
+                );
+              }
+            }),
+          );
+        },
+      [],
+    );
 
-  // We get the list of known root atoms above this one. If any exist, then that
-  // means this root is nested inside of another root. We need to pass along
-  // the list of all roots to the nested context so that value hooks can check
-  // if they are being called in the right component tree
-  const parentBootstrapRoots = useContext(BootstrapRootsInScopeContext);
+    const resetBootstrapData = useRecoilCallback(
+      ({ reset }) =>
+        () => {
+          for (const attachedAtom of attachedAtoms) {
+            reset(attachedAtom);
+          }
+        },
+      [],
+    );
 
-  // We use snapshots to set the root atom value instead of the typical
-  // `useRecoilState` setter because the latter is asynchronous and would result
-  // in bootstrap data not being available for the first render.
-  const snapshot = useRecoilSnapshot();
-  const gotoRecoilSnapshot = useGotoRecoilSnapshot();
-  if (bootstrapDataLoadable.state === 'loading') {
-    gotoRecoilSnapshot(
-      snapshot.map(({ set }) => {
-        set(rootAtom, bootstrapData);
-      }),
+    const loadedRef = useRef(false);
+    if (!loadedRef.current) {
+      setBootstrapData();
+    }
+
+    const cleanup = useRef(() => {
+      // Do nothing since we set this on the next line
+    });
+    cleanup.current = resetBootstrapData;
+    useEffect(
+      () => () => {
+        cleanup.current();
+        loadedRef.current = false;
+      },
+      [cleanup],
+    );
+
+    // We get the list of known root atoms above this one. If any exist, then that
+    // means this root is nested inside of another root. We need to pass along
+    // the list of all roots to the nested context so that value hooks can check
+    // if they are being called in the right component tree
+    const parentBootstrapRoot = useContext(BootstrapRootContext);
+    return (
+      <BootstrapRootContext.Provider
+        // We add this bootstrap root's root atom to the list of known roots.
+        // Turns out, we can nest the same provider multiple times, and it scopes
+        // itself so that we always get the right value in the right place.
+        value={{
+          id: providerId,
+          parentIds: [...parentBootstrapRoot.parentIds, providerId],
+          attachedAtomIds: [],
+        }}
+      >
+        {children}
+      </BootstrapRootContext.Provider>
     );
   }
 
-  // TODO: add some logic that puts the root atom back in a loadable state on
-  // component unmount here.
-
-  return (
-    <BootstrapRootsInScopeContext.Provider
-      // We add this bootstrap root's root atom to the list of known roots.
-      // Turns out, we can nest the same provider multiple times, and it scopes
-      // itself so that we always get the right value in the right place.
-      value={[...parentBootstrapRoots, rootAtom]}
-    >
-      {children}
-    </BootstrapRootsInScopeContext.Provider>
-  );
+  return {
+    Provider,
+    [attachedAtomsSymbol]: attachedAtoms,
+  };
 }

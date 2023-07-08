@@ -49,13 +49,13 @@ test('Bootstrapped atoms initialize their values correctly', () => {
   );
 });
 
-test("Bootstrapped atoms aren't allowed to have a default prop", () => {
+test("Bootstrapped atoms aren't allowed to have a get prop", () => {
   const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   expect(() =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bootstrappedAtom(testRootAtom, {
       key: getUniqueTestKey(),
-      default: 10,
+      get: () => 10,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),
   ).toThrow();
