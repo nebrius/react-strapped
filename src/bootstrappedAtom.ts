@@ -15,6 +15,24 @@ type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
 // we assign to the `default` prop in our atom we create. This selector is tied
 // to the root atom, causing this atom's loadable state to match that of the
 // root atom.
+/**
+ * Creates a bootstrapped atom for accessing bootstrap data.
+ *
+ * @param rootAtom The root atom containing the bootstrap data to initialize
+ *  this atom with.
+ * @param options Options here are the mostly the same as the options passed to
+ *  the built-in `atom()` function in Recoil. The difference is that the
+ *  `default` property is _not_ allowed, and there is a new `initialValue`
+ *  function to replace `default`.
+ * @param options.initialValue A function to initialize the bootstrapped atom
+ *  with. This function is called at runtime with all of the bootstrap data
+ *  passed to BoostrapRoot. The atom's value is then set to the value returned
+ *  from this function.
+ * @returns The bootstrapped atom that can then be passed to
+ *  bootstrappedAtomValueHook to create a hook for safely accessing this data.
+ *  The returned atom is a normal off-the-shelf Recoil atom, and can be used
+ *  accordingly.
+ */
 export function bootstrappedAtom<AtomValue, BootstrapData>(
   rootAtom: RecoilValue<BootstrapData>,
   {

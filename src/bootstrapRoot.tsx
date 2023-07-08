@@ -18,6 +18,15 @@ interface LocalizedStateProps<BootstrapData> {
   rootAtom: RecoilState<BootstrapData>;
 }
 
+/**
+ * This component initializes the supplied root atom and its associated
+ * bootstrapped atoms with the supplied bootstrap data.
+ *
+ * @param props.bootstrapData The bootstrap data to initialize bootstrapped
+ *  atoms with.
+ * @param props.rootAtom The root atom to store the bootstrap data, which in
+ *  turn initializes all bootstrapped atoms associated with it.
+ */
 export function BootstrapRoot<BootstrapData>({
   children,
   bootstrapData,

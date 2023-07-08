@@ -4,6 +4,12 @@ import { useRecoilValue } from 'recoil';
 import type { BootstrappedRecoilAtom } from './util';
 import { BootstrapRootsInScopeContext, rootAtomSymbol } from './util';
 
+/**
+ * Creates a hook for accessing a bootstrapped atom's value safely.
+ *
+ * @param bootstrappedAtom - The bootstrapped atom to create the accessor hook for
+ * @returns The hook that accesses the value.
+ */
 export function bootstrappedAtomValueHook<AtomValue, BootstrapData>(
   bootstrappedAtom: BootstrappedRecoilAtom<AtomValue, BootstrapData>,
 ) {
