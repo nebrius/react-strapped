@@ -4,7 +4,6 @@
 
 - Fixed bug where bootstrapped atoms can be accessed outside of their bootstrap roots when still accessed inside of the Recoil root.
 - Added JSDoc comments for everything exported from this module.
-- Fixed bug where bootstrapped atoms can be accessed outside of their bootstrap roots when still accessed inside of the Recoil root
 
 ## 1.0.1 (06/23/2023)
 
