@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { RecoilRoot } from 'recoil';
 
+import { getUniqueTestKey } from './util';
 import {
   BootstrapRoot,
   bootstrappedAtom,
@@ -25,17 +26,15 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('BootstrappedAtomValueHook returns the correct value', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(
-    'testRootAtomForBootstrappedAtom1',
-  );
+  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
-    key: 'testBootstrappedAtom1',
+    key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const testValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
+  const useTestValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
 
   function TestApp() {
-    expect(testValueHook()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
+    expect(useTestValueHook()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
     return null;
   }
 
@@ -52,17 +51,18 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
 });
 
 test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(
-    'testRootAtomForBootstrappedAtom1',
-  );
+  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
-    key: 'testBootstrappedAtom1',
+    key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const testValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
+  const useTestValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
 
   function TestApp() {
-    expect(() => testValueHook()).toThrow(
+    expect(() => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useTestValueHook();
+    }).toThrow(
       'Bootstrapped atom not loaded. Did you call this hook outside of a descendant of its <BootstrapRoot> component?',
     );
     return null;
@@ -77,17 +77,18 @@ test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', 
 });
 
 test('BootstrappedAtomValueHook cannot be referenced outside of its bootstrap root', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(
-    'testRootAtomForBootstrappedAtom1',
-  );
+  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
-    key: 'testBootstrappedAtom1',
+    key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const testValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
+  const useTestValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
 
   function OuterTestApp() {
-    expect(() => testValueHook()).toThrow(
+    expect(() => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useTestValueHook();
+    }).toThrow(
       'Bootstrapped atom not loaded. Did you call this hook outside of a descendant of its <BootstrapRoot> component?',
     );
     return null;

@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { RecoilRoot, useRecoilValue } from 'recoil';
 
+import { getUniqueTestKey } from './util';
 import { BootstrapRoot, bootstrappedAtom, rootAtom } from '../src';
 
 interface TestBootstrapData {
@@ -20,11 +21,9 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('Bootstrapped atoms initialize their values correctly', () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(
-    'testRootAtomForBootstrappedAtom1',
-  );
+  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   const testBootstrappedAtom = bootstrappedAtom(testRootAtom, {
-    key: 'testBootstrappedAtom1',
+    key: getUniqueTestKey(),
     initialValue(bootstrapData) {
       expect(bootstrapData).toStrictEqual(TEST_BOOTSTRAP_DATA);
       return bootstrapData.user;
@@ -51,13 +50,11 @@ test('Bootstrapped atoms initialize their values correctly', () => {
 });
 
 test("Bootstrapped atoms aren't allowed to have a default prop", () => {
-  const testRootAtom = rootAtom<TestBootstrapData>(
-    'testRootAtomForBootstrappedAtom2',
-  );
+  const testRootAtom = rootAtom<TestBootstrapData>(getUniqueTestKey());
   expect(() =>
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bootstrappedAtom(testRootAtom, {
-      key: 'testBootstrappedAtom2',
+      key: getUniqueTestKey(),
       default: 10,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),

@@ -24,7 +24,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
-    "prepack": "npm run lint && npm run build",
+    "prepack": "npm run lint && npm run test && npm run build",
     "test": "jest ./test"
   },
   "repository": {
