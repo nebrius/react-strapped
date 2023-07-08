@@ -231,7 +231,7 @@ The key to assign to the root atom.
 
 _**Returns:**_
 
-The root atom to be passed to a corresponding [BoostrapRoot](#BootstrapRoot) component.
+The root atom to be passed to a corresponding [BootstrapRoot](#BootstrapRoot) component.
 
 ### `bootstrappedAtom(rootAtom, options)`
 
@@ -263,7 +263,7 @@ Options here are the mostly the same as the options passed to the built-in `atom
 
 `options.initialValue`: `(bootstrapData: BootstrapData) => AtomValue`
 
-A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BoostrapRoot](#BootstrapRoot). The atom's value is then set to the value returned from this function.
+A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BootstrapRoot](#BootstrapRoot). The atom's value is then set to the value returned from this function.
 
 _**Returns:**_
 
