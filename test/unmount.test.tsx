@@ -88,11 +88,9 @@ test('Unmounts with Recoil root cleanly', async () => {
   const useTestBootstrappedAtomValue =
     bootstrappedAtomValueHook(testBootstrappedAtom);
 
-  let testBootstrappedAtomValue: TestBootstrapData['user'] | undefined;
-
   function Contents() {
-    testBootstrappedAtomValue = useTestBootstrappedAtomValue();
-    return null;
+    const testValue = useTestBootstrappedAtomValue();
+    return <>{testValue.name}</>;
   }
 
   function TestApp() {
