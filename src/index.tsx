@@ -9,8 +9,13 @@ import React, {
   useRef,
   createContext,
 } from 'react';
-import { useRecoilValue, type RecoilState } from 'recoil';
-import { type AtomOptions, useRecoilCallback, atom } from 'recoil';
+import {
+  type AtomOptions,
+  type RecoilState,
+  useRecoilValue,
+  useRecoilCallback,
+  atom,
+} from 'recoil';
 
 let nextProviderId = 0;
 
@@ -34,16 +39,11 @@ const BootstrapRootContext = createContext<{
   parentIds: [],
 });
 
-const atomRoot = Symbol('atomRoot');
-type BootstrappedAtom<AtomValue, BootstrapData> = RecoilState<AtomValue> & {
-  [atomRoot]: BootstrapRoot<BootstrapData>;
-};
-
 class BootstrapRoot<BootstrapData> {
   #providerId = nextProviderId++;
 
   #attachedAtoms: Array<{
-    bootstrappedAtom: BootstrappedAtom<unknown, BootstrapData>;
+    bootstrappedAtom: RecoilState<unknown>;
     initialValue: (bootstrapData: BootstrapData) => unknown;
   }> = [];
 
@@ -75,7 +75,7 @@ class BootstrapRoot<BootstrapData> {
     initialValue,
     ...options
   }: BootstrappedAtomOptions<AtomValue, BootstrapData>): [
-    BootstrappedAtom<AtomValue, BootstrapData>,
+    RecoilState<AtomValue>,
     () => AtomValue,
   ] {
     // Extra checking for vanilla JS users. This isn't possible in TypeScript
@@ -84,19 +84,13 @@ class BootstrapRoot<BootstrapData> {
         'The "default" prop is not allowed in bootstrapped atoms. Use "initialValue" instead',
       );
     }
-    const bootstrappedAtom = atom(options) as BootstrappedAtom<
-      AtomValue,
-      BootstrapData
-    >;
+    const bootstrappedAtom = atom(options);
     this.#attachedAtoms.push({
-      bootstrappedAtom: bootstrappedAtom as BootstrappedAtom<
-        unknown,
-        BootstrapData
-      >,
+      bootstrappedAtom: bootstrappedAtom as RecoilState<unknown>,
       initialValue,
     });
 
-    const useBootstrappedAtomValue = (): AtomValue => {
+    const useBootstrappedAtomValue = () => {
       // Check if this bootstrapped atom's root atom is in scope.
       const bootstrapRootContext = useContext(BootstrapRootContext);
       if (!bootstrapRootContext.parentIds.includes(this.#providerId)) {
@@ -130,9 +124,9 @@ class BootstrapRoot<BootstrapData> {
         () => {
           gotoSnapshot(
             snapshot.map(({ set }) => {
-              for (const { bootstrappedAtom: atom, initialValue } of this
+              for (const { bootstrappedAtom, initialValue } of this
                 .#attachedAtoms) {
-                set(atom, initialValue(bootstrapData));
+                set(bootstrappedAtom, initialValue(bootstrapData));
               }
             }),
           );
@@ -143,8 +137,8 @@ class BootstrapRoot<BootstrapData> {
     const resetBootstrapData = useRecoilCallback(
       ({ reset }) =>
         () => {
-          for (const { bootstrappedAtom: atom } of this.#attachedAtoms) {
-            reset(atom);
+          for (const { bootstrappedAtom } of this.#attachedAtoms) {
+            reset(bootstrappedAtom);
           }
         },
       [],
@@ -188,8 +182,6 @@ class BootstrapRoot<BootstrapData> {
   };
 }
 
-export function createBootstrapRoot<
-  BootstrapData = never,
->(): BootstrapRoot<BootstrapData> {
-  return new BootstrapRoot();
+export function createBootstrapRoot<BootstrapData = never>() {
+  return new BootstrapRoot<BootstrapData>();
 }
