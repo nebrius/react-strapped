@@ -29,7 +29,7 @@ const TEST_BOOTSTRAP_DATA_2: TestBootstrapData = {
 
 test('Resets default state on remount', async () => {
   const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const [, useTestBootstrappedAtomValue] = testBootstrapRoot.bootstrappedAtom({
+  const useTestBootstrappedAtomValue = testBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -65,17 +65,15 @@ test('Resets default state on remount', async () => {
     </Suspense>,
   );
 
-  console.log('testing 1');
   expect(testBootstrappedAtomValue).toEqual(TEST_BOOTSTRAP_DATA_1.user);
 
   await userEvent.click(screen.getByText('Reset Recoil'));
-  console.log('testing 2');
   expect(testBootstrappedAtomValue).toEqual(TEST_BOOTSTRAP_DATA_2.user);
 });
 
 test('Unmounts with Recoil root cleanly', async () => {
   const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const [, useTestBootstrappedAtomValue] = testBootstrapRoot.bootstrappedAtom({
+  const useTestBootstrappedAtomValue = testBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });

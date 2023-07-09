@@ -36,13 +36,13 @@ const INNER_TEST_BOOTSTRAP_DATA: InnerTestBootstrapData = {
 
 test('Bootstrap roots can be nested', () => {
   const outerTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
-  const [, useOuterTestValueHook] = outerTestBootstrapRoot.bootstrappedAtom({
+  const useOuterTestValueHook = outerTestBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
 
   const innerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
-  const [, useInnerTestValueHook] = innerTestBootstrapRoot.bootstrappedAtom({
+  const useInnerTestValueHook = innerTestBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -74,13 +74,13 @@ test('Bootstrap roots can be nested', () => {
 
 test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
   const outerTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
-  const [, useOuterTestValueHook] = outerTestBootstrapRoot.bootstrappedAtom({
+  const useOuterTestValueHook = outerTestBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
 
   const innerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
-  const [, useInnerTestValueHook] = innerTestBootstrapRoot.bootstrappedAtom({
+  const useInnerTestValueHook = innerTestBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });

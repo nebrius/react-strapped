@@ -22,7 +22,7 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 
 test('BootstrappedAtomValueHook returns the correct value', () => {
   const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const [, useTestValueHook] = testBootstrapRoot.bootstrappedAtom({
+  const useTestValueHook = testBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
@@ -43,7 +43,7 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
 
 test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
   const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const [, useTestValueHook] = testBootstrapRoot.bootstrappedAtom({
+  const useTestValueHook = testBootstrapRoot.bootstrappedValueHook({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });

@@ -48,7 +48,11 @@ class BootstrapRoot<BootstrapData> {
   }> = [];
 
   public constructor() {
+    // Each of these functions is generic, and TypeScript currently doesn't
+    // support generics on class fields with an arrow function, so we have to
+    // bind their `this` values the old-fashioned way.
     this.bootstrappedAtom = this.bootstrappedAtom.bind(this);
+    this.bootstrappedValueHook = this.bootstrappedValueHook.bind(this);
   }
 
   /**
@@ -104,6 +108,12 @@ class BootstrapRoot<BootstrapData> {
     };
 
     return [bootstrappedAtom, useBootstrappedAtomValue];
+  }
+
+  public bootstrappedValueHook<AtomValue>(
+    options: BootstrappedAtomOptions<AtomValue, BootstrapData>,
+  ) {
+    return this.bootstrappedAtom(options)[1];
   }
 
   public Provider = ({
