@@ -34,8 +34,9 @@
                 }
             }
         ],
-        "import/no-default-export": "error",
         "import/no-cycle": "error",
+        "import/no-default-export": "error",
+        "import/no-unused-modules": "error",
         "import/consistent-type-specifier-style": ["error", "prefer-inline"],
         "@typescript-eslint/array-type": [
             "error",

@@ -4,11 +4,7 @@ import React from 'react';
 import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
-import {
-  createBootstrapRoot,
-  bootstrappedAtom,
-  bootstrappedAtomValueHook,
-} from '../src';
+import { createBootstrapRoot } from '../src';
 
 interface TestBootstrapData {
   user: {
@@ -25,12 +21,11 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('BootstrappedAtomValueHook returns the correct value', () => {
-  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
+  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const [, useTestValueHook] = testBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const useTestValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
 
   function TestApp() {
     expect(useTestValueHook()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
@@ -39,20 +34,19 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
 
   render(
     <RecoilRoot>
-      <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
+      <testBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
         <TestApp />
-      </TestBootstrapRoot.Provider>
+      </testBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
 test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
-  const TestBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const testBootstrappedAtom = bootstrappedAtom(TestBootstrapRoot, {
+  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
+  const [, useTestValueHook] = testBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const useTestValueHook = bootstrappedAtomValueHook(testBootstrappedAtom);
 
   function TestApp() {
     expect(() => {

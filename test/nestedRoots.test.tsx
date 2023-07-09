@@ -4,11 +4,7 @@ import React from 'react';
 import { RecoilRoot } from 'recoil';
 
 import { getUniqueTestKey } from './util';
-import {
-  createBootstrapRoot,
-  bootstrappedAtom,
-  bootstrappedAtomValueHook,
-} from '../src';
+import { createBootstrapRoot } from '../src';
 
 interface OuterTestBootstrapData {
   ship: {
@@ -39,23 +35,17 @@ const INNER_TEST_BOOTSTRAP_DATA: InnerTestBootstrapData = {
 };
 
 test('Bootstrap roots can be nested', () => {
-  const OuterTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
-  const outerBootstrappedAtom = bootstrappedAtom(OuterTestBootstrapRoot, {
+  const outerTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
+  const [, useOuterTestValueHook] = outerTestBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
-  const useOuterTestValueHook = bootstrappedAtomValueHook(
-    outerBootstrappedAtom,
-  );
 
-  const InnerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
-  const innerBootstrappedAtom = bootstrappedAtom(InnerTestBootstrapRoot, {
+  const innerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
+  const [, useInnerTestValueHook] = innerTestBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const useInnerTestValueHook = bootstrappedAtomValueHook(
-    innerBootstrappedAtom,
-  );
 
   function TestApp() {
     expect(useOuterTestValueHook()).toStrictEqual(
@@ -69,37 +59,31 @@ test('Bootstrap roots can be nested', () => {
 
   render(
     <RecoilRoot>
-      <OuterTestBootstrapRoot.Provider
+      <outerTestBootstrapRoot.Provider
         bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
       >
-        <InnerTestBootstrapRoot.Provider
+        <innerTestBootstrapRoot.Provider
           bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
         >
           <TestApp />
-        </InnerTestBootstrapRoot.Provider>
-      </OuterTestBootstrapRoot.Provider>
+        </innerTestBootstrapRoot.Provider>
+      </outerTestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
 test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
-  const OuterTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
-  const outerBootstrappedAtom = bootstrappedAtom(OuterTestBootstrapRoot, {
+  const outerTestBootstrapRoot = createBootstrapRoot<OuterTestBootstrapData>();
+  const [, useOuterTestValueHook] = outerTestBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ ship }) => ship,
   });
-  const useOuterTestValueHook = bootstrappedAtomValueHook(
-    outerBootstrappedAtom,
-  );
 
-  const InnerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
-  const innerBootstrappedAtom = bootstrappedAtom(InnerTestBootstrapRoot, {
+  const innerTestBootstrapRoot = createBootstrapRoot<InnerTestBootstrapData>();
+  const [, useInnerTestValueHook] = innerTestBootstrapRoot.bootstrappedAtom({
     key: getUniqueTestKey(),
     initialValue: ({ user }) => user,
   });
-  const useInnerTestValueHook = bootstrappedAtomValueHook(
-    innerBootstrappedAtom,
-  );
 
   function TestApp() {
     expect(useOuterTestValueHook()).toStrictEqual(
@@ -116,14 +100,14 @@ test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
 
   render(
     <RecoilRoot>
-      <OuterTestBootstrapRoot.Provider
+      <outerTestBootstrapRoot.Provider
         bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
       >
-        <InnerTestBootstrapRoot.Provider
+        <innerTestBootstrapRoot.Provider
           bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
         />
         <TestApp />
-      </OuterTestBootstrapRoot.Provider>
+      </outerTestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
