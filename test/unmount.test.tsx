@@ -27,13 +27,14 @@ const TEST_BOOTSTRAP_DATA_2: TestBootstrapData = {
 
 test('Resets default state on remount', async () => {
   const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
-  const useTestBootstrappedAtomValue =
-    TestStrappedProvider.createBootstrappedValue(({ user }) => user);
+  const useTestValue = TestStrappedProvider.createUseStrappedValue(
+    ({ user }) => user,
+  );
 
-  let testBootstrappedAtomValue: TestBootstrapData['user'] | undefined;
+  let testValue: TestBootstrapData['user'] | undefined;
 
   function Contents() {
-    testBootstrappedAtomValue = useTestBootstrappedAtomValue();
+    testValue = useTestValue();
     return null;
   }
 
@@ -42,7 +43,7 @@ test('Resets default state on remount', async () => {
 
     return (
       <>
-        <button onClick={() => setKey(1)}>Reset Recoil</button>
+        <button onClick={() => setKey(1)}>Reset Provider</button>
         <TestStrappedProvider.Provider
           key={`test-${key}`}
           bootstrapData={key ? TEST_BOOTSTRAP_DATA_2 : TEST_BOOTSTRAP_DATA_1}
@@ -55,16 +56,16 @@ test('Resets default state on remount', async () => {
 
   render(<TestApp />);
 
-  expect(testBootstrappedAtomValue).toEqual(TEST_BOOTSTRAP_DATA_1.user);
+  expect(testValue).toEqual(TEST_BOOTSTRAP_DATA_1.user);
 
-  await userEvent.click(screen.getByText('Reset Recoil'));
-  expect(testBootstrappedAtomValue).toEqual(TEST_BOOTSTRAP_DATA_2.user);
+  await userEvent.click(screen.getByText('Reset Provider'));
+  expect(testValue).toEqual(TEST_BOOTSTRAP_DATA_2.user);
 });
 
 test('Unmounts with Recoil root cleanly', async () => {
   const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
   const useTestBootstrappedAtomValue =
-    TestStrappedProvider.createBootstrappedValue(({ user }) => user);
+    TestStrappedProvider.createUseStrappedValue(({ user }) => user);
 
   function Contents() {
     const testValue = useTestBootstrappedAtomValue();

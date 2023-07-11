@@ -30,13 +30,20 @@ export function createStrappedProvider<BootstrapData>() {
   let nextStrapId = 0;
   let hasRendered = false;
 
-  const attachedStraps: Map<
-    string,
-    Initializer<unknown, BootstrapData>
-  > = new Map();
-  function createBootstrappedState<StrapValue>(
-    initializer: Initializer<StrapValue, BootstrapData>,
-  ) {
+  function useGetContext() {
+    let context = useContext(ProviderContext);
+    while (context !== null) {
+      if (context.providerId === providerId) {
+        return context;
+      }
+      context = context.parentContext;
+    }
+    throw new Error(
+      "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
+    );
+  }
+
+  function initStrap(initializer: Initializer<unknown, BootstrapData>) {
     if (hasRendered) {
       throw new Error(
         'Cannot create straps after their strap provider has been rendered at least once',
@@ -44,35 +51,37 @@ export function createStrappedProvider<BootstrapData>() {
     }
     const strapKey = `${providerId}:${nextStrapId++}`;
     attachedStraps.set(strapKey, initializer);
-
-    function useGetContext() {
-      let context = useContext(ProviderContext);
-      while (context !== null) {
-        if (context.providerId === providerId) {
-          return context;
-        }
-        context = context.parentContext;
-      }
-      throw new Error(
-        "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
-      );
-    }
-
-    function useValue() {
-      return useGetContext().strapValues.get(strapKey) as StrapValue;
-    }
-
-    function useSetValue(newValue: StrapValue) {
-      useGetContext().updateStrap(strapKey, newValue);
-    }
-
-    return [useValue, useSetValue] as const;
+    return strapKey;
   }
 
-  function createBootstrappedValue<StrapValue>(
+  const attachedStraps: Map<
+    string,
+    Initializer<unknown, BootstrapData>
+  > = new Map();
+  function createUseStrappedState<StrapValue>(
     initializer: Initializer<StrapValue, BootstrapData>,
   ) {
-    return createBootstrappedState(initializer)[0];
+    const strapKey = initStrap(initializer);
+    return () => {
+      const context = useGetContext();
+      const value = context.strapValues.get(strapKey) as StrapValue;
+
+      const setValue = useCallback(
+        (newValue: StrapValue) => {
+          context.updateStrap(strapKey, newValue);
+        },
+        [context],
+      );
+
+      return [value, setValue] as const;
+    };
+  }
+
+  function createUseStrappedValue<StrapValue>(
+    initializer: Initializer<StrapValue, BootstrapData>,
+  ) {
+    const strapKey = initStrap(initializer);
+    return () => useGetContext().strapValues.get(strapKey) as StrapValue;
   }
 
   function Provider({
@@ -119,8 +128,8 @@ export function createStrappedProvider<BootstrapData>() {
   }
 
   return {
-    createBootstrappedState,
-    createBootstrappedValue,
+    createUseStrappedState,
+    createUseStrappedValue,
     Provider,
   };
 }

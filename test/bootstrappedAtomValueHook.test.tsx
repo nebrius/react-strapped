@@ -18,40 +18,40 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
   },
 };
 
-test('BootstrappedAtomValueHook returns the correct value', () => {
-  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
-  const useTestValueHook = TestBootstrapRoot.createBootstrappedValue(
+test('useStrappedValue returns the correct value', () => {
+  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
+  const useStrappedValue = TestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
 
   function TestApp() {
-    expect(useTestValueHook()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
+    expect(useStrappedValue()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
     return null;
   }
 
   render(
-    <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
+    <TestStrappedRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
       <TestApp />
-    </TestBootstrapRoot.Provider>,
+    </TestStrappedRoot.Provider>,
   );
 });
 
-test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
-  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
-  const useTestValueHook = TestBootstrapRoot.createBootstrappedValue(
+test('useStrappedValue cannot be referenced without a strapped provider', () => {
+  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
+  const useStrappedValue = TestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
 
   function TestApp() {
     expect(() => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      useTestValueHook();
+      useStrappedValue();
     }).toThrow(
       "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
     );
     return null;
   }
 
-  // Intentionally render without a bootstrap root to throw an exception
+  // Intentionally render without a strapped provider to throw an exception
   render(<TestApp />);
 });

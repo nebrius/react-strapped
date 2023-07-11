@@ -18,9 +18,9 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
   },
 };
 
-test('Bootstrapped atoms synchronously initialize their values correctly', () => {
-  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
-  const useTestBootstrappedAtom = TestBootstrapRoot.createBootstrappedValue(
+test('Strapped providers synchronously initialize their values correctly', () => {
+  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
+  const useStrappedValue = TestStrappedRoot.createUseStrappedValue(
     (bootstrapData) => {
       expect(bootstrapData).toStrictEqual(TEST_BOOTSTRAP_DATA);
       return bootstrapData.user;
@@ -28,13 +28,13 @@ test('Bootstrapped atoms synchronously initialize their values correctly', () =>
   );
 
   function TestApp() {
-    expect(useTestBootstrappedAtom()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
+    expect(useStrappedValue()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
     return null;
   }
 
   render(
-    <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
+    <TestStrappedRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
       <TestApp />
-    </TestBootstrapRoot.Provider>,
+    </TestStrappedRoot.Provider>,
   );
 });

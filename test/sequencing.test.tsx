@@ -19,11 +19,11 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('Bootstrapped atoms synchronously initialize their values correctly', () => {
-  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
+  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
 
-  render(<TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA} />);
+  render(<TestStrappedRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA} />);
 
-  expect(() => TestBootstrapRoot.createBootstrappedValue(() => 10)).toThrow(
+  expect(() => TestStrappedRoot.createUseStrappedValue(() => 10)).toThrow(
     'Cannot create straps after their strap provider has been rendered at least once',
   );
 });

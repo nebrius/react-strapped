@@ -32,60 +32,52 @@ const INNER_TEST_BOOTSTRAP_DATA: InnerTestBootstrapData = {
   },
 };
 
-test('Bootstrap roots can be nested', () => {
-  const OuterTestBootstrapRoot =
+test('Strapped providers can be nested', () => {
+  const OuterTestStrappedRoot =
     createStrappedProvider<OuterTestBootstrapData>();
-  const useOuterTestValueHook = OuterTestBootstrapRoot.createBootstrappedValue(
+  const useOuterTestValue = OuterTestStrappedRoot.createUseStrappedValue(
     ({ ship }) => ship,
   );
 
-  const InnerTestBootstrapRoot =
+  const InnerTestStrappedRoot =
     createStrappedProvider<InnerTestBootstrapData>();
-  const useInnerTestValueHook = InnerTestBootstrapRoot.createBootstrappedValue(
+  const useInnerTestValue = InnerTestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
 
   function TestApp() {
-    expect(useOuterTestValueHook()).toStrictEqual(
-      OUTER_TEST_BOOTSTRAP_DATA.ship,
-    );
-    expect(useInnerTestValueHook()).toStrictEqual(
-      INNER_TEST_BOOTSTRAP_DATA.user,
-    );
+    expect(useOuterTestValue()).toStrictEqual(OUTER_TEST_BOOTSTRAP_DATA.ship);
+    expect(useInnerTestValue()).toStrictEqual(INNER_TEST_BOOTSTRAP_DATA.user);
     return null;
   }
 
   render(
-    <OuterTestBootstrapRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
-      <InnerTestBootstrapRoot.Provider
-        bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
-      >
+    <OuterTestStrappedRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
+      <InnerTestStrappedRoot.Provider bootstrapData={INNER_TEST_BOOTSTRAP_DATA}>
         <TestApp />
-      </InnerTestBootstrapRoot.Provider>
-    </OuterTestBootstrapRoot.Provider>,
+      </InnerTestStrappedRoot.Provider>
+    </OuterTestStrappedRoot.Provider>,
   );
 });
 
-test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
-  const OuterTestBootstrapRoot =
+test('Nested strapped providers cannot be accessed outside of their tree', () => {
+  const OuterTestStrappedRoot =
     createStrappedProvider<OuterTestBootstrapData>();
-  const useOuterTestValueHook = OuterTestBootstrapRoot.createBootstrappedValue(
+  const useOuterTestValue = OuterTestStrappedRoot.createUseStrappedValue(
     ({ ship }) => ship,
   );
 
-  const InnerTestBootstrapRoot =
+  const InnerTestStrappedRoot =
     createStrappedProvider<InnerTestBootstrapData>();
-  const useInnerTestValueHook = InnerTestBootstrapRoot.createBootstrappedValue(
+  const useInnerTestValue = InnerTestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
 
   function TestApp() {
-    expect(useOuterTestValueHook()).toStrictEqual(
-      OUTER_TEST_BOOTSTRAP_DATA.ship,
-    );
+    expect(useOuterTestValue()).toStrictEqual(OUTER_TEST_BOOTSTRAP_DATA.ship);
     expect(() => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      useInnerTestValueHook();
+      useInnerTestValue();
     }).toThrow(
       "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
     );
@@ -93,11 +85,11 @@ test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
   }
 
   render(
-    <OuterTestBootstrapRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
-      <InnerTestBootstrapRoot.Provider
+    <OuterTestStrappedRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
+      <InnerTestStrappedRoot.Provider
         bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
       />
       <TestApp />
-    </OuterTestBootstrapRoot.Provider>,
+    </OuterTestStrappedRoot.Provider>,
   );
 });
