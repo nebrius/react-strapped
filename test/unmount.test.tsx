@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React, { Suspense, useState } from 'react';
-import { RecoilRoot } from 'recoil';
+import React, { useState } from 'react';
 
 import { createStrappedProvider } from '../src/core';
 
@@ -54,13 +53,7 @@ test('Resets default state on remount', async () => {
     );
   }
 
-  render(
-    <Suspense fallback={<></>}>
-      <RecoilRoot>
-        <TestApp />
-      </RecoilRoot>
-    </Suspense>,
-  );
+  render(<TestApp />);
 
   expect(testBootstrappedAtomValue).toEqual(TEST_BOOTSTRAP_DATA_1.user);
 
@@ -85,12 +78,12 @@ test('Unmounts with Recoil root cleanly', async () => {
       return null;
     }
     return (
-      <RecoilRoot>
+      <>
         <button onClick={() => setShouldRender(false)}>Reset Recoil</button>
         <TestStrappedProvider.Provider bootstrapData={TEST_BOOTSTRAP_DATA_1}>
           <Contents />
         </TestStrappedProvider.Provider>
-      </RecoilRoot>
+      </>
     );
   }
 

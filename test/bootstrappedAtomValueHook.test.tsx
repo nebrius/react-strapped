@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import { RecoilRoot } from 'recoil';
 
 import { createStrappedProvider } from '../src/core';
 
@@ -31,11 +30,9 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
   }
 
   render(
-    <RecoilRoot>
-      <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
-        <TestApp />
-      </TestBootstrapRoot.Provider>
-    </RecoilRoot>,
+    <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
+      <TestApp />
+    </TestBootstrapRoot.Provider>,
   );
 });
 
@@ -56,9 +53,5 @@ test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', 
   }
 
   // Intentionally render without a bootstrap root to throw an exception
-  render(
-    <RecoilRoot>
-      <TestApp />
-    </RecoilRoot>,
-  );
+  render(<TestApp />);
 });

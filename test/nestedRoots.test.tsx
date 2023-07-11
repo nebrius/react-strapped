@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import { RecoilRoot } from 'recoil';
 
 import { createStrappedProvider } from '../src/core';
 
@@ -57,17 +56,13 @@ test('Bootstrap roots can be nested', () => {
   }
 
   render(
-    <RecoilRoot>
-      <OuterTestBootstrapRoot.Provider
-        bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
+    <OuterTestBootstrapRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
+      <InnerTestBootstrapRoot.Provider
+        bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
       >
-        <InnerTestBootstrapRoot.Provider
-          bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
-        >
-          <TestApp />
-        </InnerTestBootstrapRoot.Provider>
-      </OuterTestBootstrapRoot.Provider>
-    </RecoilRoot>,
+        <TestApp />
+      </InnerTestBootstrapRoot.Provider>
+    </OuterTestBootstrapRoot.Provider>,
   );
 });
 
@@ -98,15 +93,11 @@ test('Nested bootstrap roots cannot be accessed outside of their tree', () => {
   }
 
   render(
-    <RecoilRoot>
-      <OuterTestBootstrapRoot.Provider
-        bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}
-      >
-        <InnerTestBootstrapRoot.Provider
-          bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
-        />
-        <TestApp />
-      </OuterTestBootstrapRoot.Provider>
-    </RecoilRoot>,
+    <OuterTestBootstrapRoot.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA}>
+      <InnerTestBootstrapRoot.Provider
+        bootstrapData={INNER_TEST_BOOTSTRAP_DATA}
+      />
+      <TestApp />
+    </OuterTestBootstrapRoot.Provider>,
   );
 });
