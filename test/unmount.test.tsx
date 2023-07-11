@@ -3,8 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React, { Suspense, useState } from 'react';
 import { RecoilRoot } from 'recoil';
 
-import { getUniqueTestKey } from './util';
-import { createBootstrapRoot } from '../src';
+import { createStrappedProvider } from '../src/core';
 
 interface TestBootstrapData {
   user: {
@@ -28,11 +27,9 @@ const TEST_BOOTSTRAP_DATA_2: TestBootstrapData = {
 };
 
 test('Resets default state on remount', async () => {
-  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const useTestBootstrappedAtomValue = testBootstrapRoot.bootstrappedValueHook({
-    key: getUniqueTestKey(),
-    initialValue: ({ user }) => user,
-  });
+  const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
+  const useTestBootstrappedAtomValue =
+    TestStrappedProvider.createBootstrappedValue(({ user }) => user);
 
   let testBootstrappedAtomValue: TestBootstrapData['user'] | undefined;
 
@@ -47,12 +44,12 @@ test('Resets default state on remount', async () => {
     return (
       <>
         <button onClick={() => setKey(1)}>Reset Recoil</button>
-        <testBootstrapRoot.Provider
+        <TestStrappedProvider.Provider
           key={`test-${key}`}
           bootstrapData={key ? TEST_BOOTSTRAP_DATA_2 : TEST_BOOTSTRAP_DATA_1}
         >
           <Contents />
-        </testBootstrapRoot.Provider>
+        </TestStrappedProvider.Provider>
       </>
     );
   }
@@ -72,11 +69,9 @@ test('Resets default state on remount', async () => {
 });
 
 test('Unmounts with Recoil root cleanly', async () => {
-  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const useTestBootstrappedAtomValue = testBootstrapRoot.bootstrappedValueHook({
-    key: getUniqueTestKey(),
-    initialValue: ({ user }) => user,
-  });
+  const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
+  const useTestBootstrappedAtomValue =
+    TestStrappedProvider.createBootstrappedValue(({ user }) => user);
 
   function Contents() {
     const testValue = useTestBootstrappedAtomValue();
@@ -92,9 +87,9 @@ test('Unmounts with Recoil root cleanly', async () => {
     return (
       <RecoilRoot>
         <button onClick={() => setShouldRender(false)}>Reset Recoil</button>
-        <testBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA_1}>
+        <TestStrappedProvider.Provider bootstrapData={TEST_BOOTSTRAP_DATA_1}>
           <Contents />
-        </testBootstrapRoot.Provider>
+        </TestStrappedProvider.Provider>
       </RecoilRoot>
     );
   }

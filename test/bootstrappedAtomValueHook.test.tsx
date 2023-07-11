@@ -3,8 +3,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { RecoilRoot } from 'recoil';
 
-import { getUniqueTestKey } from './util';
-import { createBootstrapRoot } from '../src';
+import { createStrappedProvider } from '../src/core';
 
 interface TestBootstrapData {
   user: {
@@ -21,11 +20,10 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('BootstrappedAtomValueHook returns the correct value', () => {
-  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const useTestValueHook = testBootstrapRoot.bootstrappedValueHook({
-    key: getUniqueTestKey(),
-    initialValue: ({ user }) => user,
-  });
+  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
+  const useTestValueHook = TestBootstrapRoot.createBootstrappedValue(
+    ({ user }) => user,
+  );
 
   function TestApp() {
     expect(useTestValueHook()).toStrictEqual(TEST_BOOTSTRAP_DATA.user);
@@ -34,26 +32,25 @@ test('BootstrappedAtomValueHook returns the correct value', () => {
 
   render(
     <RecoilRoot>
-      <testBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
+      <TestBootstrapRoot.Provider bootstrapData={TEST_BOOTSTRAP_DATA}>
         <TestApp />
-      </testBootstrapRoot.Provider>
+      </TestBootstrapRoot.Provider>
     </RecoilRoot>,
   );
 });
 
 test('BootstrappedAtomValueHook cannot be referenced without a bootstrap root', () => {
-  const testBootstrapRoot = createBootstrapRoot<TestBootstrapData>();
-  const useTestValueHook = testBootstrapRoot.bootstrappedValueHook({
-    key: getUniqueTestKey(),
-    initialValue: ({ user }) => user,
-  });
+  const TestBootstrapRoot = createStrappedProvider<TestBootstrapData>();
+  const useTestValueHook = TestBootstrapRoot.createBootstrappedValue(
+    ({ user }) => user,
+  );
 
   function TestApp() {
     expect(() => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useTestValueHook();
     }).toThrow(
-      'Bootstrapped atom not loaded. Did you call this hook outside of a descendant of its <BootstrapRoot> component?',
+      "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
     );
     return null;
   }
