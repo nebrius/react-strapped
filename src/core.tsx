@@ -95,7 +95,12 @@ export function createStrappedProvider<BootstrapData>() {
         values.set(strapKey, initializer(bootstrapData));
       }
       return values;
-    }, [bootstrapData]);
+      // We only want to initialize straps once, even if bootstrap data changes,
+      // because it would wipe out any updates to straps, which is why we use
+      // an empty dependency array here. To reset state with new bootstrap data,
+      // consumers will add a `key` value to this component to force an unmount
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const [strapValues, setStrapValues] = useState(initialStrapValues);
 
