@@ -21,8 +21,6 @@ interface ProviderContextProps {
 
 let nextProviderId = 0;
 
-// This context maintains all information about a given bootstrap root, and is
-// mostly used to verify that things are being used in the correct place
 const ProviderContext = createContext<ProviderContextProps | null>(null);
 
 export function createStrappedProvider<BootstrapData>() {
