@@ -47,7 +47,7 @@ test('useStrappedValue cannot be referenced without a strapped provider', () => 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useStrappedValue();
     }).toThrow(
-      "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
+      "Strap not available. Did you call this hook outside of a descendant of this strap's <Provider> component?",
     );
     return null;
   }

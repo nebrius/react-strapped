@@ -37,7 +37,7 @@ export function createStrappedProvider<BootstrapData>() {
       context = context.parentContext;
     }
     throw new Error(
-      "Strap not loaded. Did you call this hook outside of a descendant of this strap's <Provider> component?",
+      "Strap not available. Did you call this hook outside of a descendant of this strap's <Provider> component?",
     );
   }
 

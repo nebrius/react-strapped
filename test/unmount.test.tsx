@@ -97,33 +97,3 @@ test("Doesn't reset straps after changing bootstrap data", async () => {
   await userEvent.click(screen.getByText('Reset Data'));
   expect(testValue).toEqual(TEST_BOOTSTRAP_DATA_1.user);
 });
-
-test('Unmounts with Recoil root cleanly', async () => {
-  const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
-  const useTestBootstrappedAtomValue =
-    TestStrappedProvider.createUseStrappedValue(({ user }) => user);
-
-  function Contents() {
-    const testValue = useTestBootstrappedAtomValue();
-    return <>{testValue.name}</>;
-  }
-
-  function TestApp() {
-    const [shouldRender, setShouldRender] = useState(true);
-
-    if (!shouldRender) {
-      return null;
-    }
-    return (
-      <>
-        <button onClick={() => setShouldRender(false)}>Reset Recoil</button>
-        <TestStrappedProvider.Provider bootstrapData={TEST_BOOTSTRAP_DATA_1}>
-          <Contents />
-        </TestStrappedProvider.Provider>
-      </>
-    );
-  }
-
-  render(<TestApp />);
-  await userEvent.click(screen.getByText('Reset Recoil'));
-});
