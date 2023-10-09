@@ -12,8 +12,6 @@
 
 React Strapped provides mechanisms that make it straightforward to initialize React with runtime bootstrap data in multi-page applications. React Strapped is intentionally small with no runtime dependencies.
 
-This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap) because 1) I realized that the problem recoil-bootstrap solved isn't limited to Recoil and 2) Meta appears to have stopped investing in Recoil.
-
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
@@ -32,32 +30,50 @@ This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bo
 
 ## Motivation
 
-[Recoil](https://recoiljs.org/) is a popular new state management framework for React with a powerful, yet simple, API. However, initializing Recoil with runtime bootstrap data [is tricky and non-obvious](https://github.com/facebookexperimental/Recoil/issues/750), especially when used with multi-page app frameworks such as [Next.js](https://nextjs.org/). Specific challenges include:
+React has a number of popular state management libraries, such as [Redux](https://react-redux.js.org/), [Zustand](https://github.com/pmndrs/zustand) [Jotai](https://jotai.org/), and [Recoil](https://recoiljs.org/). While each of these state management libraries brings their own opinions to state management, none of them have opinions on how to load bootstrap data. As we'll see later, this creates friction for developing modern applications.
 
-1. In multi-page apps, Recoil must be initialized with bootstrap data that's been prop-drilled to a component
-     - Thus, bootstrap data is not available to use with the `default` property in the atom descriptor, preventing us from using the standard way of initializing atoms.
-     - The recommended way to solve this challenge is to initialize atoms with the `initializeState` property in `RecoilRoot`. As we'll see in challenge 2, this is not viable in multi-page apps.
-2. Bootstrap data varies from page to page
-     - Thus, we need to initialize _different atoms_ depending on which page we're on.
-     - While it's possible, if unwieldy, to use a `switch(currentRoute)` statement to _initialize_ the atoms, we have to statically import _every_ atom from _every_ page to do the initialization.
-     - Dynamic imports are asynchronous, and thus are incompatible with the synchronous `initializeState` prop, which is otherwise the only way to conditionally import atoms based on the current route.
-3. State needs to be scoped to a React context and not used globally
-     - A Next.js server is rendering multiple requests from multiple users more or less at once, meaning global data is not an option since it wouldn't be "scoped" to a specific user.
-     - This means we can't do tricks like creating a global promise we attach to each atoms `default` prop, and then resolving it once we get the bootstrap data.
+Popular frameworks such as [Next.js](https://nextjs.org/) have given rise to what I call client-side multi-page applications. These applications blur the line between traditional multi-page applications (MPAs) and single-page applications (SPAs). Specifically, they inherit the routing and separation of concerns of traditional MPAs and combine it with client-side routing of SPAs.
 
-All of these challenges together mean that Recoil does not currently include any mechanisms for conveniently initializing Recoil with bootstrapped data in multi-page applications. Recoil Bootstrap provides these mechanisms.
+While I'm a big fan of client-side MPAs, I've always struggled with bootstrap data that's generated during server side rendering (SSR). Bootstrap data in client-side MPAs typically have the following characteristics:
+- Some data is always available on all pages.
+    - Examples include: data about the current user, feature/experimentation flags, etc.
+    - This data is always available, and can be consumed "no questions asked."
+    - In Next.js, this data is typically populated via a centralized helper function that is called from [`getServerSideProps`](getServerSideProps).
+- Other data is only available on certain pages.
+    - Examples include settings information that's only available on a settings page, but not on the home page.
+    - This data is _not_ available on all pages, and so care must be take to only access this data on the settings page.
+    - In Next.js, this data is typically populated via one-off code in a specific page(s) [`getServerSideProps`](getServerSideProps) implementation.
+- Bootstrap data is not available until the first render of the application.
+    - In Next.js, bootstrap data generated in [`getServerSideProps`](getServerSideProps) is passed as component properties to the top level component.
+    - The implication of this pattern is that any state management declared at module scope, such as `atom()` constructors in Jotai and Recoil, do not have access to this data at time of construction.
+    - This limitation means we can't use typical state initialization techniques for these state management libraries.
+- Data during SSR needs to be scoped to a React context and not be available globally.
+    - A Next.js server is rendering multiple requests from multiple users more or less at once, meaning global data is not an option since it wouldn't be "scoped" to a specific user.
+    - While it's possible to use global data safely in Next.js applications, it's _very_ tricky to completely prevent all data "leaks" at all times. As such, I think it's best to avoid as a whole.
+     - This means we can't do tricks for Jotai/Recoil like creating a global promise we attach to each atom's initializer, and then resolving it once we get the bootstrap data.
+
+Taking these characteristics into account when considering state management libraries, we end up with these requirements for state management:
+1. Initialize the store/atoms/etc. synchronously during the first render
+2. Allow global data to be used anywhere, but prevent page specific data from being used outside of that page
+3. Only load state management code on a page if they are used on that page
+
+Redux/Zustand handle requirement 1. well. Jotai/Recoil handle 1. and 3. well, but only if we're not trying to solve 2 (see https://github.com/nebrius/recoil-bootstrap#motivation for a more in-depth explanation why). None of these four handle 2. well.
+
+React Strapped exists to handle all 3 points well. That said, React Strapped is _not_ a replacement for the four state management libraries mentioned, and is indeed intended to be used in conjunction with them. See [Linking to other state management libraries](#) for more information.
+
+_Aside:_ This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap), a previous library I created to solve this problem with Recoil, because 1) I realized that the problem recoil-bootstrap solved isn't limited to Recoil and 2) Meta appears to have stopped investing in Recoil.
 
 ## Installation
 
-Install Recoil Bootstrap from npm with:
+Install React Strapped from npm with:
 
 ```
-npm install recoil-bootstrap
+npm install react-strapped
 ```
 
 ## Getting Started
 
-Recoil Bootstrap works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data initialized on first render. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code can only access data available in the React component tree the data is intended for.
+React Strapped works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data initialized on first render. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code can only access data available in the React component tree the data is intended for.
 
 This example shows a minimal example using Recoil Bootstrap. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
 
@@ -214,6 +230,14 @@ Yes, ish. Recoil Bootstrap works just fine with React Server Components. Each se
 
 The catch is that hooks cannot be used inside of React Server Components, meaning that Recoil can only be used in client-only components. As such, Recoil Bootstrap is also limited to client-only components.
 
+## Linking to other state management libraries
+
+### Jotai
+
+### Others
+
+For now
+
 ## API Specification
 
 ### `rootAtom(key)`
@@ -343,3 +367,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+[getServerSideProps]: https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props
