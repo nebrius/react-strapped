@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { useState } from 'react';
 
-import { createStrappedProvider } from '../src';
+import { createStrap } from '../src';
 
 interface TestBootstrapData {
   user: {
@@ -26,7 +26,7 @@ const TEST_BOOTSTRAP_DATA_2: TestBootstrapData = {
 };
 
 test('Resets default state on remount', async () => {
-  const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
+  const TestStrappedProvider = createStrap<TestBootstrapData>();
   const useTestValue = TestStrappedProvider.createUseStrappedValue(
     ({ user }) => user,
   );
@@ -63,7 +63,7 @@ test('Resets default state on remount', async () => {
 });
 
 test("Doesn't reset straps after changing bootstrap data", async () => {
-  const TestStrappedProvider = createStrappedProvider<TestBootstrapData>();
+  const TestStrappedProvider = createStrap<TestBootstrapData>();
   const useTestValue = TestStrappedProvider.createUseStrappedValue(
     ({ user }) => user,
   );

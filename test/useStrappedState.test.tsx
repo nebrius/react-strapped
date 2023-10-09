@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-import { createStrappedProvider } from '../src';
+import { createStrap } from '../src';
 
 interface OuterTestBootstrapData {
   ship: {
@@ -47,7 +47,7 @@ const INNER_TEST_BOOTSTRAP_DATA_2: InnerTestBootstrapData = {
 };
 
 test('Sets state', async () => {
-  const TestStrappedProvider = createStrappedProvider<InnerTestBootstrapData>();
+  const TestStrappedProvider = createStrap<InnerTestBootstrapData>();
   const useStrappedState = TestStrappedProvider.createUseStrappedState(
     ({ user }) => user,
   );
@@ -79,12 +79,11 @@ test('Sets state', async () => {
 });
 
 test('Sets outer state through an inner nested provider', async () => {
-  const OuterTestStrappedProvider =
-    createStrappedProvider<OuterTestBootstrapData>();
-  const useOuterStrappedState =
-    OuterTestStrappedProvider.createUseStrappedState(({ ship }) => ship);
-  const InnerTestStrappedProvider =
-    createStrappedProvider<InnerTestBootstrapData>();
+  const OuterTestStrapped = createStrap<OuterTestBootstrapData>();
+  const useOuterStrappedState = OuterTestStrapped.createUseStrappedState(
+    ({ ship }) => ship,
+  );
+  const InnerTestStrappedProvider = createStrap<InnerTestBootstrapData>();
   const useInnerStrappedValue =
     InnerTestStrappedProvider.createUseStrappedValue(({ user }) => user);
 
@@ -105,15 +104,13 @@ test('Sets outer state through an inner nested provider', async () => {
   }
 
   render(
-    <OuterTestStrappedProvider.Provider
-      bootstrapData={OUTER_TEST_BOOTSTRAP_DATA_1}
-    >
+    <OuterTestStrapped.Provider bootstrapData={OUTER_TEST_BOOTSTRAP_DATA_1}>
       <InnerTestStrappedProvider.Provider
         bootstrapData={INNER_TEST_BOOTSTRAP_DATA_1}
       >
         <TestApp />
       </InnerTestStrappedProvider.Provider>
-    </OuterTestStrappedProvider.Provider>,
+    </OuterTestStrapped.Provider>,
   );
 
   expect(outerTestValue).toEqual(OUTER_TEST_BOOTSTRAP_DATA_1.ship);
@@ -125,12 +122,10 @@ test('Sets outer state through an inner nested provider', async () => {
 });
 
 test('Sets inner state with an outer nested provider', async () => {
-  const OuterTestStrappedProvider =
-    createStrappedProvider<OuterTestBootstrapData>();
+  const OuterTestStrappedProvider = createStrap<OuterTestBootstrapData>();
   const useOuterStrappedvalue =
     OuterTestStrappedProvider.createUseStrappedValue(({ ship }) => ship);
-  const InnerTestStrappedProvider =
-    createStrappedProvider<InnerTestBootstrapData>();
+  const InnerTestStrappedProvider = createStrap<InnerTestBootstrapData>();
   const useInnerStrappedState =
     InnerTestStrappedProvider.createUseStrappedState(({ user }) => user);
 

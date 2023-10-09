@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-import { createStrappedProvider } from '../src';
+import { createStrap } from '../src';
 
 interface OuterTestBootstrapData {
   ship: {
@@ -33,14 +33,12 @@ const INNER_TEST_BOOTSTRAP_DATA: InnerTestBootstrapData = {
 };
 
 test('Strapped providers can be nested', () => {
-  const OuterTestStrappedRoot =
-    createStrappedProvider<OuterTestBootstrapData>();
+  const OuterTestStrappedRoot = createStrap<OuterTestBootstrapData>();
   const useOuterTestValue = OuterTestStrappedRoot.createUseStrappedValue(
     ({ ship }) => ship,
   );
 
-  const InnerTestStrappedRoot =
-    createStrappedProvider<InnerTestBootstrapData>();
+  const InnerTestStrappedRoot = createStrap<InnerTestBootstrapData>();
   const useInnerTestValue = InnerTestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
@@ -61,14 +59,12 @@ test('Strapped providers can be nested', () => {
 });
 
 test('Nested strapped providers cannot be accessed outside of their tree', () => {
-  const OuterTestStrappedRoot =
-    createStrappedProvider<OuterTestBootstrapData>();
+  const OuterTestStrappedRoot = createStrap<OuterTestBootstrapData>();
   const useOuterTestValue = OuterTestStrappedRoot.createUseStrappedValue(
     ({ ship }) => ship,
   );
 
-  const InnerTestStrappedRoot =
-    createStrappedProvider<InnerTestBootstrapData>();
+  const InnerTestStrappedRoot = createStrap<InnerTestBootstrapData>();
   const useInnerTestValue = InnerTestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );

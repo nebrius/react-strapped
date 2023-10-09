@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-import { createStrappedProvider } from '../src';
+import { createStrap } from '../src';
 
 interface TestBootstrapData {
   user: {
@@ -19,7 +19,7 @@ const TEST_BOOTSTRAP_DATA: TestBootstrapData = {
 };
 
 test('useStrappedValue returns the correct value', () => {
-  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
+  const TestStrappedRoot = createStrap<TestBootstrapData>();
   const useStrappedValue = TestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );
@@ -37,7 +37,7 @@ test('useStrappedValue returns the correct value', () => {
 });
 
 test('useStrappedValue cannot be referenced without a strapped provider', () => {
-  const TestStrappedRoot = createStrappedProvider<TestBootstrapData>();
+  const TestStrappedRoot = createStrap<TestBootstrapData>();
   const useStrappedValue = TestStrappedRoot.createUseStrappedValue(
     ({ user }) => user,
   );

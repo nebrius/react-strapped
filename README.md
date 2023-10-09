@@ -59,7 +59,7 @@ Taking these characteristics into account when considering state management libr
 
 Redux/Zustand handle requirement 1. well. Jotai/Recoil handle 1. and 3. well, but only if we're not trying to solve 2 (see https://github.com/nebrius/recoil-bootstrap#motivation for a more in-depth explanation why). None of these four handle 2. well.
 
-React Strapped exists to handle all 3 points well. That said, React Strapped is _not_ a replacement for the four state management libraries mentioned, and is indeed intended to be used in conjunction with them. See [Linking to other state management libraries](#) for more information.
+React Strapped exists to handle all 3 points well. That said, React Strapped is _not_ a replacement for the four state management libraries mentioned, and is indeed intended to be used in conjunction with them. See [Linking to other state management libraries](#linking-to-other-state-management-libraries) for more information.
 
 _Aside:_ This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap), a previous library I created to solve this problem with Recoil, because 1) I realized that the problem recoil-bootstrap solved isn't limited to Recoil and 2) Meta appears to have stopped investing in Recoil.
 
@@ -73,18 +73,16 @@ npm install react-strapped
 
 ## Getting Started
 
-React Strapped works by creating "root atoms," which are special opaque atoms that hold scoped bootstrap data initialized on first render. These atoms are not accessed directly. To access this data, we then create "bootstrapped atoms" which initialize themselves from their root atom. These bootstrapped atoms can then be used to create hooks for reading this data safely, ensuring that code can only access data available in the React component tree the data is intended for.
+React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a "strap." Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
 
-This example shows a minimal example using Recoil Bootstrap. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
+### Simple example
 
-First, let's create some atoms in a file called `state.ts`:
+This example shows a minimal example using React Strapped. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
+
+First, let's create our provider in a file called `state.ts`:
 
 ```tsx
-import {
-  rootAtom,
-  bootstrappedAtom,
-  bootstrappedAtomValueHook,
-} from 'recoil-bootstrap';
+import { createStrappedProvider } from 'react-strapped';
 
 export interface MyBootstrapData {
   currentUser: {
@@ -93,41 +91,21 @@ export interface MyBootstrapData {
   };
 }
 
-// See how this root atom only takes in a key, and is otherwise unconfigurable.
-// By specifying the shape of data here in the TypeScript generic, we get full
-// typing throughout the rest of our atoms/hooks/components/etc.
-export const myRootAtom = rootAtom<MyBootstrapData>('myRootAtom');
+// First, we create the strap, which includes the context provider and some helper functions for creating hooks
+const myStrap = createStrap<MyBootstrapData>();
 
-// Now we create a bootstrapped atom from the root atom to access bootstrap data
-const currentUserAtom = bootstrappedAtom(myRootAtom, {
-  key: 'currentUserAtom',
-  initialValue: ({ currentUser }) => currentUser,
-});
+// Next, export the provider to make data available to components
+export const MyStrapProvider = myStrap.Provider;
 
-// Lastly we create the hook for safely accessing this data. If this hook is
-// called in an incorrect way, such as before initialization or in a
-// non-bootstrapped component, it will error with a human readable message
-export const useCurrentUser = bootstrappedAtomValueHook(currentUserAtom);
+// Finally create a hook for accessing the current user included in the bootstrap data
+export const useCurrentUser = myStrap.createUseStrappedValue(({currentUser}) => currentUser);
 ```
 
 Now let's create some UI in a Next.js page component:
 
 ```tsx
-import { RecoilRoot } from 'recoil';
-import { BootstrapRoot } from 'recoil-bootstrap';
-
 import type { MyBootstrapData } from './state';
-import { myRootAtom, useCurrentUser } from './state';
-
-function MyComponent() {
-  // We use the hook created above, which makes sure that we're calling this
-  // hook in a component with <BootstrapRoot> as a parent in the component tree
-  const currentUser = useCurrentUser();
-  return (
-    // Prints "Hello Philip J Fry"
-    <div>Hello {currentUser.name}</div>
-  );
-}
+import { MyStrapProvider, useCurrentUser } from './state';
 
 interface PageProps {
   bootstrapData: MyBootstrapData;
@@ -135,7 +113,7 @@ interface PageProps {
 
 // If you're not familiar with Next.js, this function runs on a server and is
 // responsible for fetching bootstrap data. The value of the `props` property is
-// passed as props to the default export in this file.
+// passed as props to the default export React component in this file.
 export function getServerSideProps() {
   const props: PageProps = {
     bootstrapData: {
@@ -152,21 +130,29 @@ export function getServerSideProps() {
 // passed to this component come from the server via `getServerSideProps`
 export default function MyApp({ bootstrapData }: PageProps) {
   return (
-    // We create our recoil root as normal, and then create our bootstrap root
-    // with our bootstrap data and bootstrap atom. The <BootstrapRoot> component
-    // does the work of correlating our bootstrapped atoms with bootstrap data.
-    <RecoilRoot>
-      <BootstrapRoot bootstrapData={bootstrapData} rootAtom={myRootAtom}>
-        <MyComponent />
-      </BootstrapRoot>
-    </RecoilRoot>
+    // We include our strap provider and give it the bootstrap data. This
+    // initializes data and make it immediately available for use via strap
+    // hooks, e.g. `useCurrentUser`
+    <MyStrapProvider bootstrapData={bootstrapData}>
+      <MyComponent />
+    </MyStrapProvider>
+  );
+}
+
+function MyComponent() {
+  // We use the hook created above, which makes sure that we're calling this
+  // hook in a component with <MyStrapProvider> as a parent in the component tree
+  const currentUser = useCurrentUser();
+  return (
+    // Prints "Hello Philip J Fry"
+    <div>Hello {currentUser.name}</div>
   );
 }
 ```
 
-## Multi-page Apps
+### Multi-page Apps
 
-Recoil Bootstrap is designed specifically for multi-page applications, which it enables via multiple `<BootstrapRoot>` components. You can have as many bootstrap roots as you want with any amount of nesting.
+Recoil Bootstrap is designed specifically for client-side multi-page applications, which React Straps supports via multiple `<BootstrapRoot>` components. You can have as many bootstrap roots as you want with any amount of nesting.
 
 In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. With Recoil Bootstrap, you can create one bootstrap root for the common bootstrap data that exists on all pages, and then per-page bootstrap roots that contain those pages' data.
 
@@ -209,6 +195,8 @@ When using multiple roots, hooks for accessing data provide guardrails against a
 </p>
 
 For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
+
+### Updating strap data after first render
 
 ## Frequently Asked Questions
 
