@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-import { createStrappedProvider } from '../src/core';
+import { createStrappedProvider } from '../src';
 
 interface TestBootstrapData {
   user: {

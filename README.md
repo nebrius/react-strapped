@@ -1,17 +1,18 @@
-# Recoil Bootstrap
+# React Strapped
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/npm/v/recoil-bootstrap" />
-  <a href="https://bundlephobia.com/package/recoil-bootstrap">
-    <img alt="bundle size" src="https://img.shields.io/bundlephobia/min/recoil-bootstrap" />
+  <img alt="version" src="https://img.shields.io/npm/v/react-strapped" />
+  <a href="https://bundlephobia.com/package/react-strapped">
+    <img alt="bundle size" src="https://img.shields.io/bundlephobia/min/react-strapped" />
   </a>
-  <a href="https://github.com/nebrius/recoil-bootstrap/actions/workflows/tests.yml">
-    <img alt="build status" src="https://github.com/nebrius/recoil-bootstrap/actions/workflows/tests.yml/badge.svg" />
+  <a href="https://github.com/nebrius/react-strapped/actions/workflows/tests.yml">
+    <img alt="build status" src="https://github.com/nebrius/react-strapped/actions/workflows/tests.yml/badge.svg" />
   </a>
 </p>
 
+React Strapped provides mechanisms that make it straightforward to initialize React with runtime bootstrap data in multi-page applications. React Strapped is intentionally small with no runtime dependencies.
 
-Recoil Bootstrap provides mechanisms that make it straightforward to initialize Recoil with runtime bootstrap data in multi-page applications. Recoil is intentionally small with no runtime dependencies.
+This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap) because 1) I realized that the problem recoil-bootstrap solved isn't limited to Recoil and 2) Meta appears to have stopped investing in Recoil.
 
 - [Motivation](#motivation)
 - [Installation](#installation)

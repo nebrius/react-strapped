@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { useState } from 'react';
 
-import { createStrappedProvider } from '../src/core';
+import { createStrappedProvider } from '../src';
 
 interface TestBootstrapData {
   user: {
