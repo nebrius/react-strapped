@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    // Needed for linting to be able to pick up on modules
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": [

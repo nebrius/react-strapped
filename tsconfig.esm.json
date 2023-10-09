@@ -6,7 +6,8 @@
       "DOM"
     ],
     "target": "ES2022",
-    "module": "ESNext",
+    // Even though this is a browser library, we have to set module to "NodeNext" to get ESM modules + npm packages
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist/esm",
     "declarationDir": "./dist/esm/types"
