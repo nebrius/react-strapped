@@ -91,13 +91,16 @@ export interface MyBootstrapData {
   };
 }
 
-// First, we create the strap, which includes the context provider and some helper functions for creating hooks
+// First, we create the strap, which includes the context provider and some
+// helper functions for creating hooks
 const myStrap = createStrap<MyBootstrapData>();
 
 // Next, export the provider to make data available to components
 export const MyStrapProvider = myStrap.Provider;
 
-// Finally create a hook for accessing the current user included in the bootstrap data
+// Finally create a hook for accessing the current user included in the
+// bootstrap data. The callback is called once on first render to initialize the
+// strap value for use later in the app.
 export const useCurrentUser = myStrap.createUseStrappedValue(({currentUser}) => currentUser);
 ```
 
@@ -152,49 +155,49 @@ function MyComponent() {
 
 ### Multi-page Apps
 
-Recoil Bootstrap is designed specifically for client-side multi-page applications, which React Straps supports via multiple `<BootstrapRoot>` components. You can have as many bootstrap roots as you want with any amount of nesting.
+React Strapped is designed specifically for client-side multi-page applications, which React Straps supports via multiple Provider components. You can have as many providers as you want with any amount of nesting. All hooks associated with providers are available for use, regardless of where that provider sits in relation to other providers. This nesting works differently than e.g. Recoil, where you can either only access the root-most [`RecoilRoot`](https://recoiljs.org/docs/api-reference/core/RecoilRoot/), or the closest `RecoilRoot` if `override` is specified.
 
-In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. With Recoil Bootstrap, you can create one bootstrap root for the common bootstrap data that exists on all pages, and then per-page bootstrap roots that contain those pages' data.
+In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. With React Strapped, you can create one provider for the common bootstrap data that exists on all pages, and then per-page providers that contain just those pages' data.
 
 This would look like:
 
 ```tsx
-function AppWrapper({ commonBootstrapData, children }) {
+// src/components/appWrapper.tsx
+export function AppWrapper({ commonBootstrapData, children }) {
+  // This component sets up the common provider and is included on all pages
   return (
-    <RecoilRoot>
-      <BootstrapRoot
-        bootstrapData={commonBootstrapData}
-        rootAtom={commonRootAtom}
-      >
-        {children}
-      </BootstrapRoot>
-    </RecoilRoot>
+    <MyCommonStrapProvider bootstrapData={commonBootstrapData}>
+      {children}
+    </MyCommonStrapProvider>
   );
 }
 
+// src/pages/my-page.tsx
 export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
   return (
+    // Include the common provider and any other common UI here
     <AppWrapper commonBootstrapData={commonBootstrapData}>
-      <BootstrapRoot
-        bootstrapData={myPageBootstrapData}
-        rootAtom={myPageRootAtom}
-      >
-      </BootstrapRoot>
+      {/* Add the page specific provider here */}
+      <MyPageSpecificStrapProvider bootstrapData={myPageBootstrapData}>
+        {/* SomeComponents has access to all hooks created with
+            MyCommonStrapProvider _and_ MyPageSpecificStrapProvider */}
+        <SomeComponents />
+      </MyPageSpecificStrapProvider>
     </AppWrapper>
   )
 }
 ```
 
-If bootstrap data exists across a few pages, you can create a third bootstrap root that is shared between these pages.
+If bootstrap data exists across a few pages, but not all, you can create a third bootstrap root that is shared between these pages.
 
-When using multiple roots, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a bootstrapped hook based on `myPageRootAtom` on a different page, then you'll get a human readable error saying you're trying to access it from the wrong place, like so:
+When using multiple providers, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a strap hook based on `MyPageSpecificStrapProvider` on a different page, then you'll get a human readable error saying you're trying to access it from the wrong place, like so:
 
 <br />
 <p align="center">
   <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
 </p>
 
-For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [recoil-prototyping](https://github.com/nebrius/recoil-prototyping) repository.
+For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [jotai-prototyping](https://github.com/nebrius/jotai-prototyping) repository.
 
 ### Updating strap data after first render
 
