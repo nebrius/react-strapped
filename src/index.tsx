@@ -23,7 +23,7 @@ let nextProviderId = 0;
 
 const ProviderContext = createContext<ProviderContextProps | null>(null);
 
-export function createStrap<BootstrapData>() {
+export function createStrap<BootstrapData = never>() {
   const providerId = nextProviderId++;
   let nextStrapId = 0;
   let hasRendered = false;

@@ -73,7 +73,7 @@ npm install react-strapped
 
 ## Getting Started
 
-React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a set of "straps," and a "strap" is a single piece of data accessible via specially created hooks. Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
+React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a "strap." A "strap" is a related set of bootstrap data which can be accessed via special hooks created from the strap. Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
 
 ### Simple example
 
@@ -224,7 +224,7 @@ This setter is fairly limited however, and does not include the concept of async
 
 ### Is it possible to reset bootstrap data?
 
-Yes! Add a `key` to the provider that will cause it to unmount and remount, which will reset the internal React context.
+Yes. Add a `key` to the provider that will cause it to unmount and remount, which will reset the internal React context.
 
 ### Is React Strapped server side rendering friendly?
 
@@ -232,7 +232,7 @@ Yes. Initialization happens synchronously, so all data will be available for the
 
 ### Is React Strapped React Server Components friendly?
 
-Yes, ish. Recoil Bootstrap works just fine with React Server Components. Each server component that fetches bootstrap data can be assigned its own `<BootstrapRoot>` to contain that component tree's bootstrap data.
+Yes, ish. Recoil Bootstrap works just fine with React Server Components. Each server component that fetches bootstrap data can be assigned its own Provider to contain that component tree's bootstrap data.
 
 The catch is that hooks cannot be used inside of React Server Components, meaning that React Strapped is limited to client-only components. React Strapped includes a `use client` directive in its implementation to force code that uses them to also be client-only.
 
@@ -267,109 +267,100 @@ I haven't experimented with Redux/Zustand and React Strapped, but I suspect it w
 
 ## API Specification
 
-### `rootAtom(key)`
+### `createStrap()`
 
-Creates a root atom.
-
-```ts
-function rootAtom<T>(key: string): RecoilState<T>
-```
-
-_**Props:**_
-
-`key`: `string`
-
-The key to assign to the root atom.
-
-_**Returns:**_
-
-The root atom to be passed to a corresponding [BootstrapRoot](#BootstrapRoot) component.
-
-### `bootstrappedAtom(rootAtom, options)`
-
-Creates a bootstrapped atom for accessing bootstrap data.
+Creates a strap. Data associated with this strap is typed as `BootstrapData`
 
 ```ts
-type BootstrappedAtomOptions<AtomValue, BootstrapData> = Omit<
-  AtomOptions<AtomValue>,
-  'default'
-> & {
-  initialValue: (bootstrapData: BootstrapData) => AtomValue;
-};
-
-function bootstrappedAtom<AtomValue, BootstrapData>(
-  rootAtom: RecoilValue<BootstrapData>,
-  options: BootstrappedAtomOptions<AtomValue, BootstrapData>
-): RecoilState<AtomValue>
-```
-
-_**Props:**_
-
-`rootAtom`: `RecoilValue<BootstrapData>`
-
-The root atom containing the bootstrap data to initialize this atom with.
-
-`options`: `BootstrappedAtomOptions<AtomValue, BootstrapData>`
-
-Options here are the mostly the same as the options passed to the built-in `atom()` function in Recoil. The difference is that the `default` property is _not_ allowed, and there is a new `initialValue` function to replace `default`.
-
-`options.initialValue`: `(bootstrapData: BootstrapData) => AtomValue`
-
-A function to initialize the bootstrapped atom with. This function is called at runtime with all of the bootstrap data passed to [BootstrapRoot](#BootstrapRoot). The atom's value is then set to the value returned from this function.
-
-_**Returns:**_
-
-The bootstrapped atom that can then be passed to [bootstrappedAtomValueHook](#bootstrappedAtomValueHook) to create a hook for safely accessing this data. The returned atom is a normal off-the-shelf Recoil atom, and can be used accordingly.
-
-_**Throws:**_
-
-This function will throw an exception if a `default` value is included in `options`.
-
-### `bootstrappedAtomValueHook(bootstrappedAtom)`
-
-Creates a hook for accessing a bootstrapped atom's value safely.
-
-```ts
-function bootstrappedAtomValueHook<T>(bootstrappedAtom: RecoilValue<T>): () => T
-```
-
-_**Props:**_
-
-`bootstrappedAtom`: `RecoilValue<T>`
-
-The bootstrapped atom to create the accessor hook for
-
-_**Returns:**_
-
-The hook that accesses the value.
-
-_**Throws:**_
-
-Calling the hook returned from this function in the wrong scope will throw an exception. "Wrong scope" is defined as calling this hook in a component that does not have the correct corresponding `BootstrapRoot` further up the component tree as a parent of this component.
-
-### `<BootstrapRoot bootstrapData={} rootAtom={}>...</BootstrapRoot>`
-
-This component initializes the supplied root atom and its associated bootstrapped atoms with the supplied bootstrap data.
-
-```ts
-interface LocalizedStateProps<BootstrapData> {
-  bootstrapData: BootstrapData;
-  rootAtom: RecoilState<BootstrapData>;
+export function createStrap<BootstrapData>(): {
+  createUseStrappedState,
+  createUseStrappedValue,
+  Provider,
 }
+```
 
-function BootstrapRoot<BootstrapData>(
-  props: PropsWithChildren<LocalizedStateProps<BootstrapData>>
-): JSX.Element | null
+_**Props:**_
+
+_none_
+
+_**Returns:**_
+
+An object with the three properties:
+
+- `Provider`
+- `createUseStrappedValue`
+- `createUseStrappedState`
+
+See below for more information on these properties.
+
+### `<strap.Provider bootstrapData={}>...</BootstrapRoot>`
+
+This component initializes the strap with the supplied bootstrap data.
+
+```ts
+function Provider({ children, bootstrapData, }: PropsWithChildren<{
+    bootstrapData: BootstrapData;
+}>): JSX.Element
 ```
 _**Props:**_
 
 `bootstrapData`: `BootstrapData`
 
-The bootstrap data to initialize bootstrapped atoms with.
+The bootstrap data to initialize the strap with.
 
-`rootAtom`: `RecoilState<BootstrapData>`
+### `createUseStrappedValue(initializer)`
 
-The root atom to store the bootstrap data, which in turn initializes all bootstrapped atoms associated with it.
+Creates a hook that returns the value created in the supplied initializer.
+
+```ts
+type Initializer<StrapValue, BootstrapData> = (
+  bootstrapData: BootstrapData,
+) => StrapValue;
+
+function createUseStrappedValue<StrapValue>(initializer: Initializer<StrapValue, BootstrapData>): () => StrapValue;
+```
+
+_**Props:**_
+
+`initializer`: `(bootstrapData: BootstrapData) => StrapValue`
+
+The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider.
+
+_**Returns:**_
+
+A hook that return the value of the strap, as returned from the initializer.
+
+_**Throws:**_
+
+The returned hook will throw an exception if it is called from outside a descendant of the Provider component.
+
+### `createUseStrappedState(initializer)`
+
+Creates a hook that returns the value and a setter created in the supplied initializer.
+
+```ts
+type Initializer<StrapValue, BootstrapData> = (
+  bootstrapData: BootstrapData,
+) => StrapValue;
+
+function createUseStrappedValue<StrapValue>(
+  initializer: Initializer<StrapValue, BootstrapData>
+): () => [value: StrapValue, setValue: (newValue: StrapValue) => void];
+```
+
+_**Props:**_
+
+`initializer`: `(bootstrapData: BootstrapData) => StrapValue`
+
+The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider.
+
+_**Returns:**_
+
+A hook that return the value of the strap, as returned from the initializer, and a setter to update the value of this strap.
+
+_**Throws:**_
+
+The returned hook will throw an exception if it is called from outside a descendant of the Provider component.
 
 ## License
 
