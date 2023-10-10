@@ -73,7 +73,7 @@ npm install react-strapped
 
 ## Getting Started
 
-React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a "strap." Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
+React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a set of "straps," and a "strap" is a single piece of data accessible via specially created hooks. Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
 
 ### Simple example
 
@@ -197,37 +197,73 @@ When using multiple providers, hooks for accessing data provide guardrails again
   <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
 </p>
 
-For an in-depth example of a multi-page Next.js app using Recoil Bootstrap, see my [jotai-prototyping](https://github.com/nebrius/jotai-prototyping) repository.
+For an in-depth example of a multi-page Next.js app using React Strapped, see my [jotai-prototyping](https://github.com/nebrius/jotai-prototyping) repository.
 
 ### Updating strap data after first render
+
+React Strapped includes limited support for updating data. Each strapped set includes a helper function for creating a hook with the same signature as React's [`useState` hook](https://react.dev/reference/react/useState). We can modify the simple example from above as follows:
+
+```tsx
+const myStrap = createStrap<MyBootstrapData>();
+
+export const MyStrapProvider = myStrap.Provider;
+
+// Note how we call createUseStrappedState intsead of createUseStrappedValue
+export const useCurrentUserState = myStrap.createUseStrappedState(({currentUser}) => currentUser);
+```
+
+And then in a UI component we can do:
+
+```tsx
+const [currentUser, setCurrentUser] = useCurrentUserState();
+```
+
+This setter is fairly limited however, and does not include the concept of asynchronous updates, reducers, chaining set values from other atoms/state, etc. If you need to make use of these features, I recommend pairing [Jotai](https://jotai.org/) with React Strapped.
 
 ## Frequently Asked Questions
 
 ### Is it possible to reset bootstrap data?
 
-Not currently, but it's on the roadmap. See https://github.com/nebrius/recoil-bootstrap/issues/1 for more information.
+Yes! Add a `key` to the provider that will cause it to unmount and remount, which will reset the internal React context.
 
-### Can I reuse root atoms across different bootstrap roots?
+### Is React Strapped server side rendering friendly?
 
-No. When this happens, the last bootstrap root to be initialized will win, and any previous initialization data will be discarded. In addition, once I get support for resetting bootstrap data implemented, this could break client-side routing because one of the roots could be unmounted while the other is still mounted. This would cause the bootstrapped atom to be put back in a loading state and would start throwing exceptions in the still-mounted bootstrap root component tree.
+Yes. Initialization happens synchronously, so all data will be available for the single rendering pass that happens in server side rendering. All data is also contained inside of a React context, and so can't leak to other rendering passes.
 
-### Is Recoil Bootstrap server side rendering friendly?
-
-Yes. Initialization happens synchronously, so all data will be available for the single rendering pass that happens in server side rendering.
-
-### Is Recoil Bootstrap React Server Components friendly?
+### Is React Strapped React Server Components friendly?
 
 Yes, ish. Recoil Bootstrap works just fine with React Server Components. Each server component that fetches bootstrap data can be assigned its own `<BootstrapRoot>` to contain that component tree's bootstrap data.
 
-The catch is that hooks cannot be used inside of React Server Components, meaning that Recoil can only be used in client-only components. As such, Recoil Bootstrap is also limited to client-only components.
+The catch is that hooks cannot be used inside of React Server Components, meaning that React Strapped is limited to client-only components. React Strapped includes a `use client` directive in its implementation to force code that uses them to also be client-only.
 
 ## Linking to other state management libraries
 
 ### Jotai
 
+Connecting a Jotai atom to React Strapped can be accomplished with the [`useHydrateAtoms` utility](https://jotai.org/docs/utilities/ssr).
+
+```tsx
+function RootishComponent() {
+  const myFirstStrapValue = useStrapValue(); // Hook returned from a createUseStrappedValue() call
+  const mySecondStrapValue = useStrapValue(); // Hook returned from another createUseStrappedValue() call
+  useHydrateAtoms([
+    [myFirstAtom, myFirstStrapValue],
+    [mSecondAtom, mySecondStrapValue]
+  ]);
+}
+```
+
+Then you can use these as normal atoms.
+
+Note: when connecting React Strapped and Jotai, you'll need to be careful where you put the Jotai Provider, since Jotai [does not supported nested providers](https://github.com/pmndrs/jotai/discussions/682) the same way React Strapped does. I recommend putting the Jotai Provider outside of the top-most React Strapped provider, just to be safe.
+
+### Recoil
+
+Unfortunately I was not able to create a way for this mechanism to work with Recoil, due to [this bug which has gone unanswered]().
+
 ### Others
 
-For now
+I haven't experimented with Redux/Zustand and React Strapped, but I suspect it will be tricky to do. Redux and Zustand centralize store creation, meaning you can't do distributed initialization of slices/reducers across different layers of the app.
 
 ## API Specification
 
