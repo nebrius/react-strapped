@@ -10,7 +10,7 @@
   </a>
 </p>
 
-React Strapped provides mechanisms that make it straightforward to initialize React with runtime bootstrap data in multi-page applications. React Strapped is intentionally small with no runtime dependencies.
+React Strapped makes it straightforward to initialize React with runtime bootstrap data in multi-page applications. React Strapped is intentionally small with no runtime dependencies.
 
 - [Motivation](#motivation)
 - [Installation](#installation)
@@ -35,7 +35,7 @@ React Strapped provides mechanisms that make it straightforward to initialize Re
 
 ## Motivation
 
-React has a number of popular state management libraries, such as [Redux](https://react-redux.js.org/), [Zustand](https://github.com/pmndrs/zustand) [Jotai](https://jotai.org/), and [Recoil](https://recoiljs.org/). While each of these state management libraries brings their own opinions to state management, none of them have opinions on how to load bootstrap data. As we'll see later, this creates friction for developing modern applications.
+React has a number of popular state management libraries, such as [Redux](https://react-redux.js.org/), [Zustand](https://github.com/pmndrs/zustand), [Jotai](https://jotai.org/), and [Recoil](https://recoiljs.org/). While each of these state management libraries brings their own opinions to state management, none of them have opinions on how to load bootstrap data not available until first render. This creates friction for developing modern applications.
 
 Popular frameworks such as [Next.js](https://nextjs.org/) have given rise to what I call client-side multi-page applications. These applications blur the line between traditional multi-page applications (MPAs) and single-page applications (SPAs). Specifically, they inherit the routing and separation of concerns of traditional MPAs and combine it with client-side routing of SPAs.
 
@@ -47,13 +47,13 @@ While I'm a big fan of client-side MPAs, I've always struggled with bootstrap da
 - Other data is only available on certain pages.
     - Examples include settings information that's only available on a settings page, but not on the home page.
     - This data is _not_ available on all pages, and so care must be take to only access this data on the settings page.
-    - In Next.js, this data is typically populated via one-off code in a specific page(s) [`getServerSideProps`](getServerSideProps) implementation.
+    - In Next.js, this data is typically populated via one-off code in a specific page(s)' [`getServerSideProps`](getServerSideProps) implementation.
 - Bootstrap data is not available until the first render of the application.
     - In Next.js, bootstrap data generated in [`getServerSideProps`](getServerSideProps) is passed as component properties to the top level component.
     - The implication of this pattern is that any state management declared at module scope, such as `atom()` constructors in Jotai and Recoil, do not have access to this data at time of construction.
-    - This limitation means we can't use typical state initialization techniques for these state management libraries.
+    - This limitation means we can't use these libraries preferrerd state initialization techniques.
 - Data during SSR needs to be scoped to a React context and not be available globally.
-    - A Next.js server is rendering multiple requests from multiple users more or less at once, meaning global data is not an option since it wouldn't be "scoped" to a specific user.
+    - A Next.js server is rendering multiple requests from multiple users more or less at once, meaning global data is not a pragmatic option since it wouldn't be "scoped" to a specific user.
     - While it's possible to use global data safely in Next.js applications, it's _very_ tricky to completely prevent all data "leaks" at all times. As such, I think it's best to avoid as a whole.
      - This means we can't do tricks for Jotai/Recoil like creating a global promise we attach to each atom's initializer, and then resolving it once we get the bootstrap data.
 
@@ -62,11 +62,11 @@ Taking these characteristics into account when considering state management libr
 2. Allow global data to be used anywhere, but prevent page specific data from being used outside of that page
 3. Only load state management code on a page if they are used on that page
 
-Redux/Zustand handle requirement 1. well. Jotai/Recoil handle 1. and 3. well, but only if we're not trying to solve 2 (see https://github.com/nebrius/recoil-bootstrap#motivation for a more in-depth explanation why). None of these four handle 2. well.
+Redux/Zustand handle requirement 1. well. Jotai/Recoil handle requirements 1. and 3. well, but only if we're not trying to solve requirement 2. (see https://github.com/nebrius/recoil-bootstrap#motivation for a more in-depth explanation why). None of these four handle requirement 2. well.
 
-React Strapped exists to handle all 3 points well. That said, React Strapped is _not_ a replacement for the four state management libraries mentioned, and is indeed intended to be used in conjunction with them. See [Linking to other state management libraries](#linking-to-other-state-management-libraries) for more information.
+React Strapped exists to handle all 3 requirements well. That said, React Strapped is _not_ a replacement for the four state management libraries mentioned, and is indeed intended to be used in conjunction with them. See [Linking to other state management libraries](#linking-to-other-state-management-libraries) for more information.
 
-_Aside:_ This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap), a previous library I created to solve this problem with Recoil, because 1) I realized that the problem recoil-bootstrap solved isn't limited to Recoil and 2) Meta appears to have stopped investing in Recoil.
+_Aside:_ This project grew out of [recoil-bootstrap](https://github.com/nebrius/recoil-bootstrap), a previous library I created to meet these requirements with Recoil. I realized with my previous project that 1) these requirements are not specific to Recoil and 2) Meta appears to have stopped investing in Recoil all together sadly.
 
 ## Installation
 
@@ -78,13 +78,13 @@ npm install react-strapped
 
 ## Getting Started
 
-React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a "strap." A "strap" is a related set of bootstrap data which can be accessed via special hooks created from the strap. Unlike other state management libraries, these contexts are intentionally designed so that more than one can be used at a time and with each other. We'll see this in action in the next section.
+React Strapped works by creating a React context to hold bootstrap data, and special hooks for accessing this data. We call an instance of provider+hooks associated with a piece of bootstrap data a "strap." Unlike other state management libraries, these providers+hooks are intentionally designed so that more than one provider can be used at a time without impacting other providers. We'll see what this means and why it's important in the next section.
 
 ### Simple example
 
 This example shows a minimal example using React Strapped. It's written in TypeScript to a) demonstrate how TypeScript types flows through the library and b) to give a sense of what data is expected where. You can absolutely use this library without using TypeScript though.
 
-First, let's create our provider in a file called `state.ts`:
+First, let's create our provider and hooks in a file called `state.ts`:
 
 ```tsx
 import { createStrappedProvider } from 'react-strapped';
@@ -105,7 +105,7 @@ export const MyStrapProvider = myStrap.Provider;
 
 // Finally create a hook for accessing the current user included in the
 // bootstrap data. The callback is called once on first render to initialize the
-// strap value for use later in the app.
+// strap value returned by the hook.
 export const useCurrentUser = myStrap.createUseStrappedValue(({currentUser}) => currentUser);
 ```
 
@@ -160,14 +160,15 @@ function MyComponent() {
 
 ### Multi-page Apps
 
-React Strapped is designed specifically for client-side multi-page applications, which React Straps supports via multiple Provider components. You can have as many providers as you want with any amount of nesting. All hooks associated with providers are available for use, regardless of where that provider sits in relation to other providers. This nesting works differently than e.g. Recoil, where you can either only access the root-most [`RecoilRoot`](https://recoiljs.org/docs/api-reference/core/RecoilRoot/), or the closest `RecoilRoot` if `override` is specified.
+React Strapped is designed specifically for client-side multi-page applications, which React Straps supports via multiple Provider components. You can have as many providers as you want with any amount of nesting. All hooks associated with providers are available for use, regardless of where that provider sits in relation to other providers.
 
-In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. With React Strapped, you can create one provider for the common bootstrap data that exists on all pages, and then per-page providers that contain just those pages' data.
+This nesting works differently than in Recoil and Jotai. In Jotai, you can only use atom values associated with the closest [`Provider`](https://github.com/pmndrs/jotai/discussions/682). In Recoil, you can either only access the root-most [`RecoilRoot`](https://recoiljs.org/docs/api-reference/core/RecoilRoot/), or the closest `RecoilRoot` if the `override` property is specified. Neither of these allow you to access all values from all providers, regardless of nesting.
 
-This would look like:
+Why does this distinction matter? In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. The natural setup to handle these two sets of data is to create one provider for the common bootstrap data that exists on all pages, and then per-page providers that contain just those pages' data. React Strapped supports exactly this provider setup by allowing any number of straps to be nested, and propogating data appropriately between them.
+
+First, we can create an app-wide wrapper that's included on all pages in a file called `appWrapper.tsx`:
 
 ```tsx
-// src/components/appWrapper.tsx
 export function AppWrapper({ commonBootstrapData, children }) {
   // This component sets up the common provider and is included on all pages
   return (
@@ -176,8 +177,11 @@ export function AppWrapper({ commonBootstrapData, children }) {
     </MyCommonStrapProvider>
   );
 }
+```
 
-// src/pages/my-page.tsx
+Then, we can include this code, along with a second provider, in a page specific file:
+
+```tsx
 export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
   return (
     // Include the common provider and any other common UI here
@@ -193,9 +197,9 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
 }
 ```
 
-If bootstrap data exists across a few pages, but not all, you can create a third bootstrap root that is shared between these pages.
+If bootstrap data exists across two or more pages, but not all pages, you can create a third strap that is shared between these pages that sits between the global strap and the page specific strap.
 
-When using multiple providers, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a strap hook based on `MyPageSpecificStrapProvider` on a different page, then you'll get a human readable error saying you're trying to access it from the wrong place, like so:
+When using multiple providers, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a strap hook based on `MyPageSpecificStrapProvider` on a different page, then you'll get an error saying you're trying to access it from the wrong place, like so:
 
 <br />
 <p align="center">
@@ -206,12 +210,10 @@ For an in-depth example of a multi-page Next.js app using React Strapped, see my
 
 ### Updating strap data after first render
 
-React Strapped includes limited support for updating data. Each strapped set includes a helper function for creating a hook with the same signature as React's [`useState` hook](https://react.dev/reference/react/useState). We can modify the simple example from above as follows:
+React Strapped includes limited support for updating data. Each strapped set includes a helper function for creating a hook with the same signature as React's [`useState` hook](https://react.dev/reference/react/useState). We can modify the first example from above as follows:
 
 ```tsx
 const myStrap = createStrap<MyBootstrapData>();
-
-export const MyStrapProvider = myStrap.Provider;
 
 // Note how we call createUseStrappedState intsead of createUseStrappedValue
 export const useCurrentUserState = myStrap.createUseStrappedState(({currentUser}) => currentUser);
@@ -249,8 +251,8 @@ Connecting a Jotai atom to React Strapped can be accomplished with the [`useHydr
 
 ```tsx
 function RootishComponent() {
-  const myFirstStrapValue = useStrapValue(); // Hook returned from a createUseStrappedValue() call
-  const mySecondStrapValue = useStrapValue(); // Hook returned from another createUseStrappedValue() call
+  const myFirstStrapValue = useFirstStrapValue(); // Hook returned from a createUseStrappedValue() call
+  const mySecondStrapValue = useSecondStrapValue(); // Hook returned from another createUseStrappedValue() call
   useHydrateAtoms([
     [myFirstAtom, myFirstStrapValue],
     [mSecondAtom, mySecondStrapValue]
@@ -264,11 +266,11 @@ Note: when connecting React Strapped and Jotai, you'll need to be careful where 
 
 ### Recoil
 
-Unfortunately I was not able to create a way for this mechanism to work with Recoil, due to [this bug which has gone unanswered]().
+Unfortunately I was not able to create a way for this mechanism to work with Recoil, due to [this bug which has gone unanswered](https://github.com/facebookexperimental/Recoil/issues/2256).
 
 ### Others
 
-I haven't experimented with Redux/Zustand and React Strapped, but I suspect it will be tricky to do. Redux and Zustand centralize store creation, meaning you can't do distributed initialization of slices/reducers across different layers of the app.
+I haven't experimented with Redux/Zustand and React Strapped, but I suspect it will be tricky to do. Redux and Zustand centralize store creation, meaning you can't do distributed initialization of slices/reducers across different layers of the app. There may be some clever tricks to setting up a slices/reducers so they get initialized properly further down the React component tree, but I haven't figured one out yet.
 
 ## API Specification
 
@@ -298,7 +300,7 @@ An object with the three properties:
 
 See below for more information on these properties.
 
-### `<strap.Provider bootstrapData={}>...</BootstrapRoot>`
+### `<strapInstance.Provider bootstrapData={}>...</BootstrapRoot>`
 
 This component initializes the strap with the supplied bootstrap data.
 
@@ -313,7 +315,7 @@ _**Props:**_
 
 The bootstrap data to initialize the strap with.
 
-### `createUseStrappedValue(initializer)`
+### `strapInstance.createUseStrappedValue(initializer)`
 
 Creates a hook that returns the value created in the supplied initializer.
 
@@ -322,14 +324,16 @@ type Initializer<StrapValue, BootstrapData> = (
   bootstrapData: BootstrapData,
 ) => StrapValue;
 
-function createUseStrappedValue<StrapValue>(initializer: Initializer<StrapValue, BootstrapData>): () => StrapValue;
+function createUseStrappedValue<StrapValue, BootstrapData>(
+  initializer: Initializer<StrapValue, BootstrapData>
+): () => StrapValue;
 ```
 
 _**Props:**_
 
 `initializer`: `(bootstrapData: BootstrapData) => StrapValue`
 
-The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider.
+The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider, and the returned value is the value of the hook.
 
 _**Returns:**_
 
@@ -339,7 +343,7 @@ _**Throws:**_
 
 The returned hook will throw an exception if it is called from outside a descendant of the Provider component.
 
-### `createUseStrappedState(initializer)`
+### `strapInstance.createUseStrappedState(initializer)`
 
 Creates a hook that returns the value and a setter created in the supplied initializer.
 
@@ -357,7 +361,7 @@ _**Props:**_
 
 `initializer`: `(bootstrapData: BootstrapData) => StrapValue`
 
-The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider.
+The intializer is called during the first render of the Provider component associated with with this strap. The first argument passed to the intitializer is the same value passed in for the `bootstrapData` property on the Provider, and the returned value is the value of the hook.
 
 _**Returns:**_
 
