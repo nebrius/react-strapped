@@ -160,7 +160,7 @@ function MyComponent() {
 
 ### Multi-page Apps
 
-React Strapped is designed specifically for client-side multi-page applications, which React Straps supports via multiple Provider components. You can have as many providers as you want with any amount of nesting. All hooks associated with providers are available for use, regardless of where that provider sits in relation to other providers.
+React Strapped is designed specifically for client-side multi-page applications, which React Strapped supports via multiple Provider components. You can have as many providers as you want with any amount of nesting. All hooks associated with providers are available for use, regardless of where that provider sits in relation to other providers.
 
 This nesting works differently than in Recoil and Jotai. In Jotai, you can only use atom values associated with the closest [`Provider`](https://github.com/pmndrs/jotai/discussions/682). In Recoil, you can either only access the root-most [`RecoilRoot`](https://recoiljs.org/docs/api-reference/core/RecoilRoot/), or the closest `RecoilRoot` if the `override` property is specified. Neither of these allow you to access all values from all providers, regardless of nesting.
 
