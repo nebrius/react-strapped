@@ -14,7 +14,7 @@ React Strapped makes it straightforward to initialize React with runtime bootstr
 
 - [Motivation](#motivation)
 - [Installation](#installation)
-  - [Getting Started](#getting-started)
+- [Getting Started](#getting-started)
   - [Simple example](#simple-example)
   - [Multi-page Apps](#multi-page-apps)
   - [Updating strap data after first render](#updating-strap-data-after-first-render)
@@ -27,10 +27,10 @@ React Strapped makes it straightforward to initialize React with runtime bootstr
   - [Recoil](#recoil)
   - [Others](#others)
 - [API Specification](#api-specification)
-  - [`createStrap()`](#createStrap)
-  - [`<strap.Provider bootstrapData={}>...</BootstrapRoot>`](#strapprovider-bootstrapdatabootstraproot)
-  - [`createUseStrappedValue(initializer)`](#createusestrappedvalueinitializer)
-  - [`createUseStrappedState(initializer)`](#createusestrappedstateinitializer)
+  - [`createStrap()`](#createstrap)
+  - [`<strapInstance.Provider bootstrapData={}>...</BootstrapRoot>`](#strapinstanceprovider-bootstrapdatabootstraproot)
+  - [`strapInstance.createUseStrappedValue(initializer)`](#strapinstancecreateusestrappedvalueinitializer)
+  - [`strapInstance.createUseStrappedState(initializer)`](#strapinstancecreateusestrappedstateinitializer)
 - [License](#license)
 
 ## Motivation
@@ -164,49 +164,39 @@ React Strapped is designed specifically for client-side multi-page applications,
 
 This nesting works differently than in Recoil and Jotai. In Jotai, you can only use atom values associated with the closest [`Provider`](https://github.com/pmndrs/jotai/discussions/682). In Recoil, you can either only access the root-most [`RecoilRoot`](https://recoiljs.org/docs/api-reference/core/RecoilRoot/), or the closest `RecoilRoot` if the `override` property is specified. Neither of these allow you to access all values from all providers, regardless of nesting.
 
-Why does this distinction matter? In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. The natural setup to handle these two sets of data is to create one provider for the common bootstrap data that exists on all pages, and then per-page providers that contain just those pages' data. React Strapped supports exactly this provider setup by allowing any number of straps to be nested, and propogating data appropriately between them.
+Why does this distinction matter? In multi-page applications, we often have a set of bootstrap data that is common to all pages as well as bootstrap data that is specific to a page. The natural setup to handle these two sets of data is to create one provider for the common bootstrap data that exists on all pages, and then per-page providers that contain just those pages' data. React Strapped supports exactly this provider setup by allowing any number of straps to be nested, and propagating data appropriately between them.
 
-First, we can create an app-wide wrapper that's included on all pages in a file called `appWrapper.tsx`:
-
-```tsx
-export function AppWrapper({ commonBootstrapData, children }) {
-  // This component sets up the common provider and is included on all pages
-  return (
-    <MyCommonStrapProvider bootstrapData={commonBootstrapData}>
-      {children}
-    </MyCommonStrapProvider>
-  );
-}
-```
-
-Then, we can include this code, along with a second provider, in a page specific file:
+In code, we set this up like so:
 
 ```tsx
 export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
   return (
-    // Include the common provider and any other common UI here
-    <AppWrapper commonBootstrapData={commonBootstrapData}>
+    // Add the common provider here, which is used on all pages
+    <MyCommonStrapProvider bootstrapData={commonBootstrapData}>
       {/* Add the page specific provider here */}
+      <SomeCommonComponents />
       <MyPageSpecificStrapProvider bootstrapData={myPageBootstrapData}>
         {/* SomeComponents has access to all hooks created with
             MyCommonStrapProvider _and_ MyPageSpecificStrapProvider */}
-        <SomeComponents />
+        <SomePageSpecificComponents />
       </MyPageSpecificStrapProvider>
-    </AppWrapper>
+    </MyCommonStrapProvider>
   )
 }
 ```
 
-If bootstrap data exists across two or more pages, but not all pages, you can create a third strap that is shared between these pages that sits between the global strap and the page specific strap.
+With this setup, the `SomePageSpecificComponents` component tree has access to all hooks associated with both the common and page specific straps, but the `SomeCommonComponents` component tree _only_ has access to hooks associated with the common strap.
 
-When using multiple providers, hooks for accessing data provide guardrails against accessing data from the wrong place. If you try and call a strap hook based on `MyPageSpecificStrapProvider` on a different page, then you'll get an error saying you're trying to access it from the wrong place, like so:
+If bootstrap data exists across two or more pages, but not all pages, you can create a third strap that is shared between these pages that sits between the common strap and the page specific strap.
+
+To ensure that `SomeCommonComponents` code cannot access the page specific hooks, these hooks provide guardrails against accessing data from the wrong place. If you try and call a hook based on `MyPageSpecificStrapProvider` from `SomeCommonComponents`, then you'll get an error saying you're trying to access it from the wrong place, like so:
 
 <br />
 <p align="center">
   <img src="img/access-error.png" width="480" alt="Image showing a hook access error" />
 </p>
 
-For an in-depth example of a multi-page Next.js app using React Strapped, see my [jotai-prototyping](https://github.com/nebrius/jotai-prototyping) repository.
+For an in-depth example of a multi-page Next.js app using React Strapped, see my [jotai-prototyping](https://github.com/nebrius/jotai-prototyping) repository. In addition to showing off React Strapped, this repository also shows how to integrate Jotai and React Strapped together.
 
 ### Updating strap data after first render
 
