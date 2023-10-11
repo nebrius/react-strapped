@@ -173,10 +173,11 @@ export default function MyPage({ commonBootstrapData, myPageBootstrapData }) {
   return (
     // Add the common provider here, which is used on all pages
     <MyCommonStrapProvider bootstrapData={commonBootstrapData}>
-      {/* Add the page specific provider here */}
+      {/* SomeCommonComponents only has access to hooks from MyCommonStrapProvider */}
       <SomeCommonComponents />
+      {/* Add the page specific provider here, which is only used on this page */}
       <MyPageSpecificStrapProvider bootstrapData={myPageBootstrapData}>
-        {/* SomeComponents has access to all hooks created with
+        {/* SomePageSpecificComponents has access to all hooks from both
             MyCommonStrapProvider _and_ MyPageSpecificStrapProvider */}
         <SomePageSpecificComponents />
       </MyPageSpecificStrapProvider>
