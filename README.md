@@ -10,7 +10,7 @@
   </a>
 </p>
 
-React Strapped makes it straightforward to initialize React with runtime bootstrap data in multi-page applications. React Strapped is intentionally small with no runtime dependencies.
+React Strapped makes it straightforward to initialize React with runtime bootstrap data in client-side multi-page applications. React Strapped is intentionally small with no runtime dependencies.
 
 - [Motivation](#motivation)
 - [Installation](#installation)
