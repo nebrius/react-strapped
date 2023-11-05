@@ -43,13 +43,13 @@ While I'm a big fan of client-side MPAs, I've always struggled with bootstrap da
 - Some data is always available on all pages.
     - Examples include: data about the current user, feature/experimentation flags, etc.
     - This data is always available, and can be consumed "no questions asked."
-    - In Next.js, this data is typically populated via a centralized helper function that is called from [`getServerSideProps`](getServerSideProps).
+    - In Next.js, this data is typically populated via a centralized helper function that is called from [`getServerSideProps`](https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props).
 - Other data is only available on certain pages.
     - Examples include settings information that's only available on a settings page, but not on the home page.
     - This data is _not_ available on all pages, and so care must be take to only access this data on the settings page.
-    - In Next.js, this data is typically populated via one-off code in a specific page(s)' [`getServerSideProps`](getServerSideProps) implementation.
+    - In Next.js, this data is typically populated via one-off code in a specific page(s)' [`getServerSideProps`](https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props) implementation.
 - Bootstrap data is not available until the first render of the application.
-    - In Next.js, bootstrap data generated in [`getServerSideProps`](getServerSideProps) is passed as component properties to the top level component.
+    - In Next.js, bootstrap data generated in [`getServerSideProps`](https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props) is passed as component properties to the top level component.
     - The implication of this pattern is that any state management declared at module scope, such as `atom()` constructors in Jotai and Recoil, do not have access to this data at time of construction.
     - This limitation means we can't use these libraries preferrerd state initialization techniques.
 - Data during SSR needs to be scoped to a React context and not be available globally.
@@ -385,5 +385,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-[getServerSideProps]: https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props
